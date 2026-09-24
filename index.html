@@ -6109,5 +6109,79 @@ resetDocTabs();
 })();
 
 </script>
+
+<!-- ===== EDSYNC v2 – LINK AUTOMÁTICO + CLIPBOARD PC→TELEMÓVEL (bloco novo) ===== -->
+<style>
+/* EDSYNC v2 (bloco novo) */
+#pCopy.ed-new{background:#22c55e;color:#04210f;border-color:#22c55e;font-weight:700;animation:edPulse 1.2s ease-in-out infinite}
+@keyframes edPulse{50%{transform:scale(1.03)}}
+</style>
+<script>
+(function(){'use strict';
+var DEFAULT_BASE='https://edmilsonvsm.github.io/edvsm/';
+var isPhone=document.documentElement.classList.contains('edphone');
+function g(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function s(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+if(!isPhone&&window.EdSync){
+  /* 1) Link do QR automático: nunca mais pede o endereço */
+  var origGetLink=window.EdSync.getLink;
+  window.EdSync.getLink=function(){
+    if(!g('edsync_base')){
+      s('edsync_base',location.protocol==='https:'?location.origin+location.pathname.replace(/[^\/]*$/,''):DEFAULT_BASE);
+    }
+    return origGetLink.apply(this,arguments);
+  };
+
+  /* 2) Tudo o que copias no PC segue para o telemóvel (com a página em foco) */
+  var on=g('edsync_autoclip')!=='0',st='off',lastSynced=null,first=true,reading=false,blockedUntil=0;
+  window.EdSync.onState(function(x){st=x});
+  window.EdSync.onText(function(t){lastSynced=String(t)});
+  var ref=document.getElementById('phoneSoundToggle'),row=ref&&ref.closest('.phone-toggle-row');
+  if(row){
+    var n=row.cloneNode(true),inp=n.querySelector('input');
+    n.querySelector('span').textContent='Enviar para o telemóvel o que eu copio no PC';
+    inp.id='phoneAutoClipToggle';inp.removeAttribute('onchange');inp.checked=on;
+    inp.onchange=function(){on=inp.checked;s('edsync_autoclip',on?'1':'0')};
+    row.parentNode.insertBefore(n,row.nextSibling);
+  }
+  function tick(){
+    if(!on||st!=='connected'||reading||document.hidden||!document.hasFocus())return;
+    if(Date.now()<blockedUntil||!navigator.clipboard||!navigator.clipboard.readText)return;
+    reading=true;
+    navigator.clipboard.readText().then(function(t){
+      reading=false;
+      if(typeof t!=='string')return;
+      if(first){first=false;lastSynced=t;return}
+      if(!t.trim()||t===lastSynced)return;
+      lastSynced=t;
+      try{window.EdSync.send(t.slice(0,20000));if(window.showEdToast)window.showEdToast('📤 Enviado ao telemóvel')}catch(e){}
+    }).catch(function(){reading=false;blockedUntil=Date.now()+15000});
+  }
+  setInterval(tick,1000);
+  window.addEventListener('focus',tick);
+  document.addEventListener('visibilitychange',tick);
+}
+
+if(isPhone){
+  /* 3) Telemóvel: copia sozinho o que chega; se o Android bloquear, botão verde "Copiar" */
+  var pIn=document.getElementById('pIn'),pCopy=document.getElementById('pCopy'),pMsg=document.getElementById('pMsg'),pending=null;
+  function note(t){if(!pMsg)return;pMsg.textContent=t;clearTimeout(pMsg._t2);pMsg._t2=setTimeout(function(){pMsg.textContent=''},2600)}
+  function done(){pending=null;pCopy.classList.remove('ed-new');pCopy.textContent='Copiar'}
+  function tryCopy(t){
+    return navigator.clipboard.writeText(t).then(function(){done();note('Copiado ✓ já podes colar')})
+    .catch(function(){pending=t;pCopy.classList.add('ed-new');pCopy.textContent='📋 Copiar (texto novo)'});
+  }
+  if(pIn&&pCopy&&navigator.clipboard){
+    new MutationObserver(function(){
+      var t=pIn.textContent;if(!t||t==='Nada recebido ainda.')return;tryCopy(t);
+    }).observe(pIn,{childList:true,characterData:true,subtree:true});
+    pCopy.addEventListener('click',done);
+    function retry(){if(pending&&!document.hidden)setTimeout(function(){if(pending)tryCopy(pending)},300)}
+    document.addEventListener('visibilitychange',retry);window.addEventListener('focus',retry);
+  }
+}
+})();
+</script>
 </body>
 </html>

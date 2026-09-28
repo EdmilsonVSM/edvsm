@@ -332,6 +332,32 @@ header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;ba
 .sigla-bubble.frozen[class*="sigla-fx"]{animation:none;box-shadow:3px 3px 0px #1C2C4A;border-color:#1C2C4A;}
 .sigla-bubble.frozen[class*="sigla-fx"] .sigla-bg-fill{animation:none;transform:none;filter:none;}
 .sigla-bubble.frozen.sigla-fx-shimmer::after{animation:none;opacity:0;}
+/* ── EFEITOS FIXOS POR BANCO (só no quadrado com o nome do banco) ── */
+.sigla-bubble.sigla-fx-breathe .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c3,var(--c2)));background-size:100% 100%;animation:sigla-fx-breathe-k 2.2s ease-in-out infinite;}
+@keyframes sigla-fx-breathe-k{0%,100%{filter:brightness(1) saturate(1);}50%{filter:brightness(1.16) saturate(1.2);}}
+.sigla-bubble.sigla-fx-sweep .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c3,var(--c2)));background-size:100% 100%;animation:none;}
+.sigla-bubble.sigla-fx-sweep::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 66%);background-size:250% 100%;background-position:-120% 0;animation:sigla-fx-shimmer-sweep 2.4s linear infinite;pointer-events:none;}
+.sigla-bubble.sigla-fx-pulseglow{animation:sigla-fx-glow-pulse 1.8s ease-in-out infinite;}
+.sigla-bubble.sigla-fx-pulseglow .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c1));background-size:100% 100%;animation:none;}
+.sigla-bubble.sigla-fx-metal .sigla-bg-fill{background-image:linear-gradient(115deg,var(--c1) 0%,var(--c2) 28%,rgba(255,255,255,.85) 46%,var(--c2) 62%,var(--c1) 100%);background-size:300% 100%;background-position:0% 0;animation:sigla-fx-metal-slide 3.4s ease-in-out infinite alternate;}
+@keyframes sigla-fx-metal-slide{0%{background-position:0% 0;}100%{background-position:100% 0;}}
+.sigla-bubble.sigla-fx-sparkle .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c1));background-size:100% 100%;animation:none;}
+.sigla-bubble.sigla-fx-sparkle::before,.sigla-bubble.sigla-fx-sparkle::after{content:'';position:absolute;inset:0;pointer-events:none;animation:sigla-fx-twinkle 1.6s ease-in-out infinite;}
+.sigla-bubble.sigla-fx-sparkle::before{background-image:radial-gradient(circle at 18% 28%,#fff 0 2px,transparent 3px),radial-gradient(circle at 72% 20%,#fff 0 2.5px,transparent 3.5px),radial-gradient(circle at 44% 78%,#fff 0 2px,transparent 3px);}
+.sigla-bubble.sigla-fx-sparkle::after{background-image:radial-gradient(circle at 86% 66%,#fff 0 2.5px,transparent 3.5px),radial-gradient(circle at 30% 58%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 58% 40%,#fff 0 1.5px,transparent 2.5px);animation-delay:.8s;}
+@keyframes sigla-fx-twinkle{0%,100%{opacity:.1;}50%{opacity:1;}}
+.sigla-bubble.sigla-fx-ripple .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c3,var(--c2)));background-size:100% 100%;animation:none;}
+.sigla-bubble.sigla-fx-ripple::after{content:'';position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;border-radius:50%;border:3px solid rgba(255,255,255,.75);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;animation:sigla-fx-ripple-k 2s ease-out infinite;}
+@keyframes sigla-fx-ripple-k{0%{transform:translate(-50%,-50%) scale(.2);opacity:.9;}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0;}}
+.sigla-bubble.sigla-fx-flow .sigla-bg-fill{background-image:linear-gradient(135deg,var(--c1),var(--c2),var(--c3,var(--c2)),var(--c1));background-size:300% 300%;animation:sigla-fx-flow-k 4.5s ease infinite;}
+@keyframes sigla-fx-flow-k{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+@property --sigla-a{syntax:'<angle>';inherits:false;initial-value:0deg;}
+.sigla-bubble.sigla-fx-spin .sigla-bg-fill{background-image:conic-gradient(from var(--sigla-a) at 50% 50%,var(--c1),var(--c2),var(--c3,var(--c2)),var(--c1));background-size:100% 100%;animation:sigla-fx-spin-k 4s linear infinite;}
+@keyframes sigla-fx-spin-k{to{--sigla-a:360deg;}}
+.sigla-bubble.sigla-fx-bounce .sigla-bg-fill{background-image:linear-gradient(90deg,var(--c1),var(--c2),var(--c3,var(--c2)),var(--c2),var(--c1));background-size:200% 100%;animation:sigla-fx-bounce-k 2.4s ease-in-out infinite alternate;}
+@keyframes sigla-fx-bounce-k{0%{background-position:0% 0;}100%{background-position:100% 0;}}
+.sigla-bubble.frozen[class*="sigla-fx"] .sigla-bg-fill{background-size:100% 100%;background-position:0 0;}
+.sigla-bubble.frozen[class*="sigla-fx"]::before,.sigla-bubble.frozen[class*="sigla-fx"]::after{animation:none;opacity:0;}
 .sigla-bubble-text{position:relative;z-index:2;font-family:'Syne',sans-serif;font-weight:900;font-size:1.7rem;letter-spacing:.02em;line-height:1;white-space:nowrap;background-image:linear-gradient(100deg,var(--c1),var(--c2),var(--c3,var(--c2)),var(--c1));background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sigla-text-flow 2.2s linear infinite;}
 @keyframes sigla-text-flow{0%{background-position:0% 0;}100%{background-position:240% 0;}}
 .sigla-bubble.phase2 .sigla-bubble-text{color:#fff;-webkit-text-fill-color:#fff;background:none;animation:none;text-shadow:0 1px 5px rgba(0,0,0,.3);}
@@ -2170,6 +2196,54 @@ const BANK_COLORS={
   '0052':['#ff9500','#ffffff'],'0071':'#5a6b7a','0043':['#0fb35a','#ffffff'],'0045':'#8b3ee0',
   '0044':'#ffd60a','0054':'#0e6b45','0005':['#f0459c','#0fb35a','#ffffff'],
 };
+// ══ LOOK FIXO DOS BANCOS ══
+// Cores permanentes (quadrado do nome) — passam a viver no código, não dependem do navegador.
+Object.assign(BANK_COLORS,{
+  '0006':['#FFA700','#F39F00','#FFC04D'],   // BFA
+  '0040':['#0047B8','#1F5BC1','#3B6FD4'],   // BAI
+  '0051':['#FA1228','#D80C24','#FF4A5A'],   // BIC
+  '0010':['#335886','#58769C','#A0B1C8'],   // BPC
+  '0044':['#FFD60A','#FFE04D','#FFC800'],   // BSOL
+  '0055':['#63CFFD','#87D9FC','#C4E4FE'],   // BPA (Millennium Atlântico)
+  '0043':['#0FB35A','#35BF75','#77D3A1'],   // BCA
+  '0005':['#FF9ED8','#34D17C','#11C664'],   // BCI
+  '0047':['#1676BC','#138C97','#11A076'],   // KEVE
+});
+// Fundo do cartão (estático, sem animação) — da esquerda para a direita.
+const BANK_ROW_STOPS={
+  '0006':['#FCBD61','#FCBF67'],
+  '0040':['#5E91D9','#6B8DD3','#758CD0'],
+  '0051':['#F35766','#FDACA4','#FEE4E1','#FCA9A4','#F65058'],
+  '0010':['#BBE0F8','#F3F9FD','#A0B1C6','#59789B','#5B81A5'],
+  '0044':['#FCE46E','#FCE56B'],
+  '0055':['#88CDF1','#9DD8F3'],
+  '0043':['#5EC98A','#92D5A5','#C8E9CF','#E3F3E6'],
+  '0005':['#F4FFFF','#BAF9D9','#A8E3B6','#DDC6BC','#F4B3CB'],
+  '0047':['#4BA2D3','#4BBAAE','#53C78E'],
+};
+// Efeito próprio e fixo de cada banco — só no quadrado do nome. Nada aleatório.
+const BANK_SQ_FX={
+  '0006':'sigla-fx-breathe',   // BFA  — respira
+  '0040':'sigla-fx-sweep',     // BAI  — reflexo de luz a passar
+  '0051':'sigla-fx-pulseglow', // BIC  — brilho vermelho a pulsar
+  '0010':'sigla-fx-metal',     // BPC  — degradê metálico a deslizar
+  '0044':'sigla-fx-sparkle',   // BSOL — cintilar dourado
+  '0055':'sigla-fx-ripple',    // BPA  — onda a partir do centro
+  '0043':'sigla-fx-flow',      // BCA  — degradê a fluir na diagonal
+  '0005':'sigla-fx-spin',      // BCI  — degradê a rodar
+  '0047':'sigla-fx-bounce',    // KEVE — degradê vai-e-vem
+};
+// Efeito escolhido no painel "Personalizar" → efeito no quadrado
+const CUSTOM_TO_SQ_FX={shimmer:'sigla-fx-sweep',diagonal:'sigla-fx-flow',pulsar:'sigla-fx-breathe',radial:'sigla-fx-wave',onda:'sigla-fx-ripple',borda:'sigla-fx-border',solido:null,arcoiris:'sigla-fx-rainbow'};
+// Migração única: limpa personalizações antigas do navegador para os novos padrões fixos valerem.
+(function migrateBankLook(){
+  try{
+    if(localStorage.getItem('edvsm_bank_look_v2'))return;
+    Object.keys(BANK_SQ_FX).forEach(c=>localStorage.removeItem('edvsm_custom_bank_'+c));
+    localStorage.removeItem('edvsm_custom_bank_global');
+    localStorage.setItem('edvsm_bank_look_v2','1');
+  }catch(err){}
+})();
 // Mapa antigo (fixo por código de banco) — mantido apenas como referência, já não é usado.
 const BANK_EFFECTS={
   '0055':'glass','0061':'glass','0060':'glass','0056':'glass','0063':'glass','0071':'glass','0005':'glass',
@@ -2225,12 +2299,10 @@ function pickAutoBankEffect(){
 }
 function getEffectiveBankVisual(code){
   const custom=getCustomBankConfig(code);
-  if(custom)return{colors:custom.cores,effectClass:CUSTOM_EFFECT_CLASS[custom.efeito]||null,isSolid:custom.efeito==='solido'};
+  if(custom)return{colors:custom.cores,effectKey:custom.efeito,custom:true,rowStops:null};
   const bankColor=BANK_COLORS[code];if(!bankColor)return null;
   const list=Array.isArray(bankColor)?bankColor:[bankColor];
-  const effectKey=pickAutoBankEffect();
-  currentAutoEffectByCode[code]=effectKey;
-  return{colors:list,effectClass:CUSTOM_EFFECT_CLASS[effectKey]||null,isSolid:effectKey==='solido'};
+  return{colors:list,effectKey:null,custom:false,rowStops:BANK_ROW_STOPS[code]||null};
 }
 function attachBankCustomBtn(row,bankWrap,code){
   const custBtn=document.createElement('button');
@@ -2248,19 +2320,33 @@ function attachBankCustomBtn(row,bankWrap,code){
 }
 function applyBankVisualToRow(row,code){
   const visual=getEffectiveBankVisual(code);if(!visual)return null;
-  const{colors,effectClass,isSolid}=visual;
-  if(effectClass&&!isSolid){
-    row.classList.add(effectClass);
+  const{colors,effectKey,custom,rowStops}=visual;
+  ALL_BANK_EFFECT_CLASSES.forEach(c=>row.classList.remove(c));
+  row.style.backgroundImage='';row.style.removeProperty('--c1');row.style.removeProperty('--c2');row.style.removeProperty('--c3');
+  // O cartão fica estático. O efeito vive no quadrado do nome (só cai no cartão se não houver quadrado).
+  const hasSquare=!!row.querySelector('.sigla-bubble');
+  const rowFxCls=(custom&&!hasSquare)?(CUSTOM_EFFECT_CLASS[effectKey]||null):null;
+  if(rowFxCls){
+    row.classList.add(rowFxCls);
     row.style.setProperty('--c1',colors[0]);row.style.setProperty('--c2',colors[1]||colors[0]);row.style.setProperty('--c3',colors[2]||colors[1]||colors[0]);
-  }else{row.style.backgroundImage=buildBankGradient(colors);}
+  }else if(rowStops&&rowStops.length){
+    row.style.backgroundImage=`linear-gradient(to right, ${rowStops.join(', ')})`;
+  }else{
+    row.style.backgroundImage=buildBankGradient(colors);
+  }
   return colors;
 }
 function refreshAllBankVisuals(){
   document.querySelectorAll('.bank-row-wrap[data-bank-code]').forEach(wrap=>{
     const code=wrap.dataset.bankCode;const row=wrap.querySelector('.row');if(!row)return;
-    ALL_BANK_EFFECT_CLASSES.forEach(c=>row.classList.remove(c));
-    row.style.backgroundImage='';row.style.removeProperty('--c1');row.style.removeProperty('--c2');row.style.removeProperty('--c3');
-    applyBankVisualToRow(row,code);
+    const colors=applyBankVisualToRow(row,code);
+    const bubble=row.querySelector('.sigla-bubble');
+    if(bubble&&colors){
+      bubble.style.setProperty('--c1',colors[0]);bubble.style.setProperty('--c2',colors[1]||colors[0]);bubble.style.setProperty('--c3',colors[2]||colors[1]||colors[0]);
+      const next=getCustomBankConfig(code)?'custom':(BANK_SQ_FX[code]?'fixed':'generic');
+      // bancos genéricos que já têm efeito não são re-sorteados quando se guarda outro banco
+      if(!(next==='generic'&&bubble.dataset.fxSource==='generic')&&bubble.classList.contains('phase2'))applySiglaFx(bubble,code);
+    }
   });
 }
 function ibanChecksum(iban){
@@ -2279,7 +2365,7 @@ function defaultColorsFor(code){
   return[list[0]||'#1c2c4a',list[1]||list[0]||'#1c2c4a',list[2]||list[1]||list[0]||'#1c2c4a'];
 }
 function defaultEffectFor(code){
-  return currentAutoEffectByCode[code]||'solido';
+  return BANK_SQ_FX[code]?'padrao':'solido';
 }
 function buildBankCustomPreviewHTML(effKey,cls,c1,c2,c3){
   const style=`--c1:${c1};--c2:${c2};--c3:${c3};`+(cls?'':`background-image:${buildBankGradient([c1,c2,c3])};`);
@@ -2408,6 +2494,7 @@ function buildSiglaBubbleHTML(id,siglaText,bank){
 const SIGLA_PHASE_TIMERS={};
 const SIGLA_FX_TIMERS={};
 const SIGLA_FX_CLASSES=['sigla-fx-glow','sigla-fx-border','sigla-fx-wave','sigla-fx-rainbow','sigla-fx-shimmer'];
+const SIGLA_FX_ALL=[...SIGLA_FX_CLASSES,'sigla-fx-breathe','sigla-fx-sweep','sigla-fx-pulseglow','sigla-fx-metal','sigla-fx-sparkle','sigla-fx-ripple','sigla-fx-flow','sigla-fx-spin','sigla-fx-bounce'];
 let lastSiglaFx=null;
 function pickSiglaFx(){
   let choices=SIGLA_FX_CLASSES.filter(c=>c!==lastSiglaFx);
@@ -2416,15 +2503,33 @@ function pickSiglaFx(){
   lastSiglaFx=pick;
   return pick;
 }
-function initSiglaBubble(id,colors){
+// Decide o efeito do quadrado: personalização guardada > efeito fixo do banco > genérico antigo (só bancos sem look próprio)
+function resolveSiglaFx(code){
+  const custom=getCustomBankConfig(code);
+  if(custom){
+    if(custom.efeito==='padrao')return{cls:BANK_SQ_FX[code]||null,src:BANK_SQ_FX[code]?'fixed':'custom'};
+    return{cls:CUSTOM_TO_SQ_FX[custom.efeito]||null,src:'custom'};
+  }
+  if(BANK_SQ_FX[code])return{cls:BANK_SQ_FX[code],src:'fixed'};
+  return{cls:pickSiglaFx(),src:'generic'};
+}
+function applySiglaFx(bubbleEl,code){
+  if(!bubbleEl||bubbleEl.classList.contains('frozen'))return;
+  bubbleEl.classList.remove(...SIGLA_FX_ALL);
+  const fx=resolveSiglaFx(code);
+  bubbleEl.dataset.fxSource=fx.src;
+  if(fx.cls)bubbleEl.classList.add(fx.cls);
+}
+function initSiglaBubble(id,colors,code){
   const bubbleEl=document.getElementById(id);if(!bubbleEl)return;
   const list=Array.isArray(colors)?colors:[colors];
   bubbleEl.style.setProperty('--c1',list[0]);bubbleEl.style.setProperty('--c2',list[1]||list[0]);bubbleEl.style.setProperty('--c3',list[2]||list[1]||list[0]);
-  bubbleEl.classList.remove('phase2','frozen',...SIGLA_FX_CLASSES);
+  bubbleEl.classList.remove('phase2','frozen',...SIGLA_FX_ALL);
+  delete bubbleEl.dataset.fxSource;
   clearTimeout(SIGLA_PHASE_TIMERS[id]);clearTimeout(SIGLA_FX_TIMERS[id]);
   SIGLA_PHASE_TIMERS[id]=setTimeout(()=>{
     bubbleEl.classList.add('phase2');
-    SIGLA_FX_TIMERS[id]=setTimeout(()=>{if(!bubbleEl.classList.contains('frozen'))bubbleEl.classList.add(pickSiglaFx());},950);
+    SIGLA_FX_TIMERS[id]=setTimeout(()=>{if(!bubbleEl.dataset.fxSource)applySiglaFx(bubbleEl,code);},950);
   },2000);
   attachSiglaResize(bubbleEl);
 }
@@ -2494,7 +2599,7 @@ function showNibInCard(nib,fullIban){
   bankWrap.appendChild(row);
   if(bankColor){attachBankCustomBtn(row,bankWrap,code);}
   body.appendChild(bankWrap);
-  if(siglaHTML&&bankColor)initSiglaBubble('nibSiglaBubble',bankColor);
+  if(siglaHTML&&bankColor)initSiglaBubble('nibSiglaBubble',bankColor,code);
   const pills=[];
   if(fullIban)pills.push({lbl:'💳',val:'AO06'+nib,type:'iban'});
   if(bankData?.kw)pills.push({lbl:'🔍',val:bankData.kw,display:siglaText||bankData.kw,type:'pesquisa'});
@@ -3557,7 +3662,7 @@ function renderAddedNibs(){
     bankWrap.appendChild(row);
     if(addedColor){attachBankCustomBtn(row,bankWrap,addedCode);}
     body.appendChild(bankWrap);
-    if(siglaHTML&&addedColor)initSiglaBubble(bubbleId,addedColor);
+    if(siglaHTML&&addedColor)initSiglaBubble(bubbleId,addedColor,addedCode);
     const pills=[{lbl:'NIB',val:nib}];
     if(bankData?.kw)pills.push({lbl:'🔍',val:bankData.kw,display:siglaText||bankData.kw,type:'pesquisa'});
     if(pills.length){

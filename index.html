@@ -1184,7 +1184,7 @@ body.dark .slider{background:#2b3547;border-color:#b9ff66;}
 <!-- CAMPO PRINCIPAL -->
 <div class="card" id="pasteCard" style="display:block;">
   <!-- Título do card principal -->
-  <div class="verify-head">
+  <div class="verify-head" id="verifyHead">
     <div class="verify-head-icon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
     </div>
@@ -1919,23 +1919,84 @@ function openMsgPanel(highlightKey,hlClass){
 // PROVÍNCIAS
 // ══════════════════════════════════════════════════════════
 const PROVS=[
-  {o:'BENGO',v:['BENGO']},{o:'BENGUELA',v:['BENGUELA']},{o:'BIE',v:['BIE']},
-  {o:'CABINDA',v:['CABINDA']},{o:'CUANDO',v:['CUANDO']},
-  {o:'CUBANGO',v:['CUBANGO','CUANDO CUBANGO','KWANDO KUBANGO','CUANDO-CUBANGO']},
-  {o:'CUANZA NORTE',v:['CUANZA NORTE','KWANZA NORTE','CUANZA-NORTE','KWANZA-NORTE']},
-  {o:'CUANZA SUL',v:['CUANZA SUL','KWANZA SUL','CUANZA-SUL','KWANZA-SUL']},
-  {o:'CUNENE',v:['CUNENE']},{o:'HUAMBO',v:['HUAMBO']},{o:'HUILA',v:['HUILA']},
-  {o:'ICOLO E BENGO',v:['ICOLO E BENGO','ICOLO BENGO','ICOLE BENGO']},
-  {o:'LUANDA',v:['LUANDA']},{o:'LUNDA NORTE',v:['LUNDA NORTE','LUNDA-NORTE']},
-  {o:'LUNDA SUL',v:['LUNDA SUL','LUNDA-SUL']},{o:'MALANJE',v:['MALANJE','MALANGE']},
-  {o:'MOXICO',v:['MOXICO']},{o:'MOXICO LESTE',v:['MOXICO LESTE','MOXICO-LESTE']},
-  {o:'NAMIBE',v:['NAMIBE','MOCAMEDES']},{o:'UIGE',v:['UIGE']},{o:'ZAIRE',v:['ZAIRE']},
+  {o:'BENGO',v:['BENGO']},
+  {o:'BENGUELA',v:['BENGUELA','BENGELA']},
+  {o:'BIE',v:['BIE','KUITO BIE']},
+  {o:'CABINDA',v:['CABINDA']},
+  {o:'CUANDO',v:['CUANDO','KUANDO','KWANDO']},
+  {o:'CUBANGO',v:['CUBANGO','KUBANGO','CUANDO CUBANGO','CUANDO KUBANGO','KUANDO KUBANGO','KUANDO CUBANGO','KWANDO KUBANGO','KWANDO CUBANGO'],legacy:['CUANDO CUBANGO','CUANDO KUBANGO','KUANDO KUBANGO','KUANDO CUBANGO','KWANDO KUBANGO','KWANDO CUBANGO']},
+  {o:'CUANZA NORTE',v:['CUANZA NORTE','KWANZA NORTE','KUANZA NORTE','CUANZA N','KWANZA N','KUANZA N']},
+  {o:'CUANZA SUL',v:['CUANZA SUL','KWANZA SUL','KUANZA SUL','CUANZA S','KWANZA S','KUANZA S']},
+  {o:'CUNENE',v:['CUNENE','KUNENE']},
+  {o:'HUAMBO',v:['HUAMBO','WAMBO']},
+  {o:'HUILA',v:['HUILA','WILA']},
+  {o:'ICOLO E BENGO',v:['ICOLO E BENGO','ICOLO BENGO','ICOLE BENGO','ICOLO E BENGO','ICOLO']},
+  {o:'LUANDA',v:['LUANDA']},
+  {o:'LUNDA NORTE',v:['LUNDA NORTE','LUNDA N']},
+  {o:'LUNDA SUL',v:['LUNDA SUL','LUNDA S']},
+  {o:'MALANJE',v:['MALANJE','MALANGE']},
+  {o:'MOXICO',v:['MOXICO','MOSHICO']},
+  {o:'MOXICO LESTE',v:['MOXICO LESTE','MOXICO ESTE','CASSAI ZAMBEZE','CASAI ZAMBEZE','KASSAI ZAMBEZE']},
+  {o:'NAMIBE',v:['NAMIBE','MOCAMEDES','MOSSAMEDES']},
+  {o:'UIGE',v:['UIGE','UIJE']},
+  {o:'ZAIRE',v:['ZAIRE']},
 ];
+// Nomes-raiz ambíguos: existem duas províncias com este início.
+const PROV_ROOTS={'LUNDA':['LUNDA NORTE','LUNDA SUL'],'CUANZA':['CUANZA NORTE','CUANZA SUL'],'KWANZA':['CUANZA NORTE','CUANZA SUL'],'KUANZA':['CUANZA NORTE','CUANZA SUL']};
+const PROV_FILLER=new Set(['PROVINCIA','PROV','DE','DO','DA','DOS','DAS','REPUBLICA','ANGOLA','NATURAL','RESIDENCIA']);
+const PROV_INDEX=(function(){
+  const list=[];
+  PROVS.forEach(p=>p.v.forEach(v=>{
+    const compact=v.replace(/\s+/g,'');
+    list.push({o:p.o,alias:v,compact,legacy:!!(p.legacy&&p.legacy.includes(v))});
+  }));
+  return list;
+})();
+function provLev(a,b){
+  const m=a.length,n=b.length;if(!m)return n;if(!n)return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++){cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));}
+    prev=cur;
+  }
+  return prev[n];
+}
+function provTol(len){return len<=4?0:(len<=9?1:2);}
 function normProv(raw){
-  const n=norm(raw).replace(/-/g,' ');
-  for(const p of PROVS){if(p.v.some(v=>n===v||n.includes(v)||v.includes(n)))return{o:p.o,ok:true};}
-  if(n.length>=4){for(const p of PROVS){if(p.v.some(v=>v.slice(0,4)===n.slice(0,4)))return{o:p.o,ok:true};}}
-  return{o:n,ok:false};
+  const cleaned=norm(String(raw||'')).replace(/[^A-Z\s]/g,' ').replace(/\s+/g,' ').trim();
+  if(!cleaned)return{o:cleaned,ok:false};
+  const tokens=cleaned.split(' ').filter(t=>t&&!PROV_FILLER.has(t)).slice(0,10);
+  if(!tokens.length)return{o:cleaned,ok:false};
+  const cands=[];
+  for(let i=0;i<tokens.length;i++){
+    for(let len=1;len<=4&&i+len<=tokens.length;len++){
+      const win=tokens.slice(i,i+len).join('');
+      if(win.length<2)continue;
+      // raiz ambígua (ex.: LUNDA, CUANZA)
+      if(PROV_ROOTS[win]&&len===1){cands.push({score:win.length,amb:PROV_ROOTS[win]});}
+      for(const it of PROV_INDEX){
+        let d;
+        if(win===it.compact)d=0;
+        else{
+          const tol=provTol(it.compact.length);
+          if(!tol||Math.abs(win.length-it.compact.length)>tol)continue;
+          d=provLev(win,it.compact);if(d>tol)continue;
+        }
+        cands.push({score:it.compact.length-3*d,o:it.o,legacy:it.legacy,d});
+      }
+    }
+  }
+  if(!cands.length)return{o:tokens.join(' '),ok:false};
+  cands.sort((x,y)=>y.score-x.score||(x.d||0)-(y.d||0));
+  const best=cands[0];
+  if(best.amb)return{o:tokens.join(' '),ok:false,sugg:best.amb};
+  // empate entre províncias diferentes com a mesma pontuação → ambíguo
+  const rivals=cands.filter(c=>!c.amb&&c.score===best.score&&c.o!==best.o);
+  if(rivals.length){return{o:tokens.join(' '),ok:false,sugg:[...new Set([best.o,...rivals.map(r=>r.o)])].slice(0,3)};}
+  const res={o:best.o,ok:true};
+  if(best.legacy)res.note='nome antigo: Cuando Cubango';
+  return res;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2037,6 +2098,11 @@ function findProvincia(lines){
     if(/^prov[ií]ncia\s*(?:de)?\s*$/i.test(lines[i].trim())){
       for(let j=i+1;j<Math.min(i+4,lines.length);j++){if(lines[j].trim())return norm(lines[j]);}
     }
+  }
+  // sem ":" a seguir à palavra (ex.: "PROVÍNCIA CUANDO CUBANGO")
+  for(let i=0;i<lines.length;i++){
+    const m=lines[i].match(/prov[ií]ncia\s+(?:de\s+|do\s+|da\s+)?([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\-]{2,})/i);
+    if(m&&m[1].trim().length>2)return norm(m[1]);
   }
   return null;
 }
@@ -2838,12 +2904,14 @@ function getAutoHideSeconds(){
 function applySeqCollapse(){
   document.getElementById('raw').value='';
   document.getElementById('pasteSection').style.display='none';
+  document.getElementById('verifyHead').style.display='none';
   document.getElementById('notesSection').style.display='none';
   document.getElementById('pasteCollapsedBar').classList.add('show');
 }
 function restoreFullView(){
   clearTimeout(hideRawTimer);clearInterval(rawTickTimer);
   document.getElementById('pasteSection').style.display='';
+  document.getElementById('verifyHead').style.display='';
   document.getElementById('notesSection').style.display='';
   document.getElementById('pasteCollapsedBar').classList.remove('show');
   updateLivePreview();
@@ -2864,6 +2932,7 @@ function showRawSummary(html){
   if(seqMode&&autoHideOn){applySeqCollapse();return;}
 
   pasteSection.style.display='';
+  document.getElementById('verifyHead').style.display='';
   collapsedBar.classList.remove('show');
 
   if(!autoHideOn){summary.classList.remove('show');document.getElementById('rawSummaryChips').innerHTML='';rawEl.style.display='';return;}
@@ -2930,6 +2999,7 @@ function editOriginalText(){
   clearTimeout(hideRawTimer);clearInterval(rawTickTimer);
   editingOriginal=true;
   document.getElementById('pasteSection').style.display='';
+  document.getElementById('verifyHead').style.display='';
   document.getElementById('pasteCollapsedBar').classList.remove('show');
   document.getElementById('rawSummary').classList.remove('show');
   document.getElementById('rawSummaryChips').innerHTML='';
@@ -2987,7 +3057,7 @@ function renderAll(){
     const miss=!val;if(!miss)filled++;
     let sub='';
     if(key==='nascimento'&&val){const a=calcAge(val);if(a!==null)sub=`<span class="val-sub">${a} anos</span>`;}
-    if(key==='provincia'&&val&&provNormResult){sub=provNormResult.ok?`<span class="val-sub ok">✓ ${provNormResult.o}</span>`:`<span class="val-sub warn">⚠ Província não identificada</span>`;}
+    if(key==='provincia'&&val&&provNormResult){sub=provNormResult.ok?`<span class="val-sub ok">✓ ${provNormResult.o}${provNormResult.note?' ('+provNormResult.note+')':''}</span>`:`<span class="val-sub warn">⚠ Província não identificada${provNormResult.sugg?' — talvez: '+provNormResult.sugg.join(' ou '):''}</span>`;}
     const safe=miss?'':String(val).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const row=document.createElement('div');row.className='row'+(miss?' miss-row':' copyable');
     row.id='fieldRow_'+key;
@@ -3041,7 +3111,7 @@ function renderSeq(autoCopy){
   document.getElementById('stag').textContent=`${seqIdx+1}/${total}${historyPosSuffix()}`;
   let sub='';
   if(key==='nascimento'&&val){const a=calcAge(val);if(a!==null)sub=`<div class="seq-sub">${a} anos</div>`;}
-  if(key==='provincia'&&val&&provNormResult){sub=provNormResult.ok?`<div class="seq-sub" style="color:var(--ok)">✓ ${provNormResult.o}</div>`:`<div class="seq-sub" style="color:#e6a817">⚠ Não identificada</div>`;}
+  if(key==='provincia'&&val&&provNormResult){sub=provNormResult.ok?`<div class="seq-sub" style="color:var(--ok)">✓ ${provNormResult.o}${provNormResult.note?' ('+provNormResult.note+')':''}</div>`:`<div class="seq-sub" style="color:#e6a817">⚠ Não identificada${provNormResult.sugg?' — talvez: '+provNormResult.sugg.join(' ou '):''}</div>`;}
   body.innerHTML=`<div class="seq-wrap">
     <span class="seq-lbl">${label}</span>
     <div class="seq-bubble" id="seqBubble" style="position:relative;"><span class="seq-val">${val||'—'}</span>${val?'<button type="button" class="seq-edit-btn" id="seqEditBtn" onclick="event.stopPropagation();startSeqEdit();">✏️</button>':''}${sub}</div>

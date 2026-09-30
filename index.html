@@ -2390,8 +2390,8 @@ function applyBankVisualToRow(row,code){
   ALL_BANK_EFFECT_CLASSES.forEach(c=>row.classList.remove(c));
   row.style.backgroundImage='';row.style.removeProperty('--c1');row.style.removeProperty('--c2');row.style.removeProperty('--c3');
   // O cartão fica estático. O efeito vive no quadrado do nome (só cai no cartão se não houver quadrado).
-  const hasSquare=!!row.querySelector('.sigla-bubble');
-  const rowFxCls=(custom&&!hasSquare)?(CUSTOM_EFFECT_CLASS[effectKey]||null):null;
+  // Efeito escolhido em "Personalizar": anima também o cartão, como na versão antiga.
+  const rowFxCls=custom?(CUSTOM_EFFECT_CLASS[effectKey]||null):null;
   if(rowFxCls){
     row.classList.add(rowFxCls);
     row.style.setProperty('--c1',colors[0]);row.style.setProperty('--c2',colors[1]||colors[0]);row.style.setProperty('--c3',colors[2]||colors[1]||colors[0]);
@@ -2408,6 +2408,8 @@ function refreshAllBankVisuals(){
     const colors=applyBankVisualToRow(row,code);
     const bubble=row.querySelector('.sigla-bubble');
     if(bubble&&colors){
+      // Guardar/repor é uma escolha explícita: descongela o quadrado (foi congelado ao copiar a palavra de pesquisa)
+      bubble.classList.remove('frozen');
       bubble.style.setProperty('--c1',colors[0]);bubble.style.setProperty('--c2',colors[1]||colors[0]);bubble.style.setProperty('--c3',colors[2]||colors[1]||colors[0]);
       const next=getCustomBankConfig(code)?'custom':(BANK_SQ_FX[code]?'fixed':'generic');
       // bancos genéricos que já têm efeito não são re-sorteados quando se guarda outro banco

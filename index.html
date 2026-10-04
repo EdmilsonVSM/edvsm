@@ -54,7 +54,7 @@
 <title>EdVSM Filter</title>
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
@@ -1117,6 +1117,33 @@ body.dark .slider{background:#2b3547;border-color:#b9ff66;}
 .textarea-wrapper .doc-icon{position:absolute;top:.8rem;left:.8rem;font-size:1.1rem;color:#ccc;pointer-events:none;}
 
 
+
+/* ═══ BOLHA DO NIB ═══
+   Cor/efeito do banco = a própria linha (não se mexe). Por cima: ícone de checksum no canto
+   (mesmo sítio e tamanho do antigo rótulo "NIB"), barra do banco e linha do número,
+   ambos com o mesmo início e o mesmo fim, um por cima do outro. */
+.row.nib-row{grid-template-columns:auto minmax(0,1fr) auto;gap:.8rem;padding:.75rem .8rem;}
+.nib-status{justify-self:start;align-self:start;margin-top:.375rem;display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;width:1rem;height:1rem;border-radius:50%;}
+.nib-status svg{display:block;width:1rem;height:1rem;}
+.nib-status.none{visibility:hidden;}
+.row.nib-row .nib-panel{display:flex;flex-direction:column;gap:.5rem;justify-self:start;width:max-content;max-width:100%;min-width:0;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;text-shadow:none;}
+.nib-bankbar{display:block;box-sizing:border-box;width:100%;height:1.75rem;padding:0 .8rem;border-radius:999px;background:#1c2c4a;background:color-mix(in oklab,var(--nib-mark,#3a5a9a) 52%,#000);color:#fff;font-family:'DM Sans',system-ui,sans-serif;font-size:.72rem;font-weight:700;line-height:1.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nib-bankbar.unk{background:#5b6578;}
+.nib-numrow{display:flex;align-items:stretch;gap:.4rem;min-width:0;font-family:'DM Sans',system-ui,sans-serif;font-weight:800;font-size:.92rem;min-height:2.125rem;line-height:1.2;font-variant-numeric:tabular-nums;user-select:none;}
+.nib-plate{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.1rem .5rem;box-sizing:border-box;padding:.2rem .65rem;border-radius:.85rem;background:#f7f9fd;background:color-mix(in srgb,var(--nib-mark,#3a5a9a) 5%,#f7f9fd);color:#1C2C4A;}
+.nib-div{flex:none;width:3px;border-radius:2px;background:#1c2c4a;background:color-mix(in oklab,var(--nib-mark,#3a5a9a) 45%,#000);opacity:.5;}
+.nib-ctrl{flex:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:2.4rem;padding:0 .45rem;border-radius:.85rem;background:#e3ebf8;background:color-mix(in srgb,var(--nib-mark,#3a5a9a) 24%,#fff);color:#1c2c4a;color:color-mix(in oklab,var(--nib-mark,#3a5a9a) 45%,#000);}
+@media(max-width:500px){
+  .row.nib-row{grid-template-columns:minmax(0,1fr);gap:.6rem;padding:.6rem;}
+  .row.nib-row .nib-status,.row.nib-row .nib-panel,.row.nib-row .sigla-bubble-wrap{grid-column:1/-1;}
+  .row.nib-row .nib-panel{width:100%;}
+  .row.nib-row .nib-status{margin-top:0;}
+  .row.nib-row .sigla-bubble-wrap{justify-self:center;}
+  .nib-numrow{gap:.4rem;font-size:.82rem;font-size:clamp(.66rem,3.1vw,.9rem);}
+  .nib-bankbar{font-size:.72rem;padding:0 .75rem;}
+  .nib-plate{padding:.2rem .5rem;gap:.1rem .4rem;}
+  .nib-ctrl{min-width:2.4rem;padding:0 .5rem;}
+}
 </style>
 </head>
 <body>
@@ -2448,6 +2475,7 @@ function refreshAllBankVisuals(){
   document.querySelectorAll('.bank-row-wrap[data-bank-code]').forEach(wrap=>{
     const code=wrap.dataset.bankCode;const row=wrap.querySelector('.row');if(!row)return;
     const colors=applyBankVisualToRow(row,code);
+    styleNibRow(row,colors);
     const bubble=row.querySelector('.sigla-bubble');
     if(bubble&&colors){
       // Guardar/repor é uma escolha explícita: descongela o quadrado (foi congelado ao copiar a palavra de pesquisa)
@@ -2683,6 +2711,52 @@ function stopRawGlow(){const wrap=document.getElementById('rawGlowWrap');if(wrap
 // ══════════════════════════════════════════════════════════
 // MOSTRAR NIB NO CARD
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// BOLHA DO NIB — painel legível sobre a moldura do banco
+// ══════════════════════════════════════════════════════════
+function nibHexToRgb(hex){
+  if(typeof hex!=='string')return null;
+  let h=hex.trim().replace('#','');
+  if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(h))return null;
+  return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
+function nibRelLum(rgb){
+  const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};
+  return .2126*f(rgb[0])+.7152*f(rgb[1])+.0722*f(rgb[2]);
+}
+// Escolhe texto escuro ou branco consoante o que dá mais contraste sobre a cor do banco
+const NIB_ICON_OK='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#0a8f4a"/><path d="M4.4 8.3l2.3 2.3 4.7-4.9" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const NIB_ICON_ERR='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#d3342b"/><path d="M5.3 5.3l5.4 5.4M10.7 5.3l-5.4 5.4" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>';
+// Ícone de checksum: ocupa o lugar e o tamanho do antigo rótulo "NIB"
+function buildNibStatusHTML(cs){
+  if(cs===null||cs===undefined)return'<span class="nib-status none" aria-hidden="true"></span>';
+  const label=cs?'Checksum válido':'Checksum inválido — verifica o número';
+  return `<span class="nib-status ${cs?'ok':'err'}" role="img" aria-label="${label}" title="${label}">${cs?NIB_ICON_OK:NIB_ICON_ERR}</span>`;
+}
+// Barra do banco + linha do número (placa dos 19 dígitos | caixa dos 2 dígitos de controlo), com a mesma largura
+function buildNibPanelHTML(nib,bank){
+  const bar=bank?`<div class="nib-bankbar" title="${bank}">${bank}</div>`:'<div class="nib-bankbar unk">Banco não identificado</div>';
+  let num;
+  if(/^\d{21}$/.test(nib)){
+    const d=nib.slice(0,19);
+    const groups=[d.slice(0,4),d.slice(4,8),d.slice(8,12),d.slice(12,16),d.slice(16,19)];
+    num=`<div class="nib-plate">${groups.map(g=>`<span>${g}</span>`).join('')}</div><span class="nib-div"></span><span class="nib-ctrl">${nib.slice(19)}</span>`;
+  }else{
+    num=`<div class="nib-plate">${nib}</div>`;
+  }
+  return `<div class="val-wrap nib-panel">${bar}<div class="nib-numrow">${num}</div></div>`;
+}
+// A barra, a placa e a caixa de controlo tiram a cor do banco (a linha em si não é tocada)
+function styleNibRow(row,colors){
+  const panel=row&&row.querySelector('.nib-panel');if(!panel)return;
+  const list=Array.isArray(colors)?colors:(colors?[colors]:[]);
+  const c=list[0];const rgb=nibHexToRgb(c);
+  if(!rgb){panel.style.removeProperty('--nib-mark');return;}
+  // cores quase brancas não servem de base: usa o azul da identidade
+  panel.style.setProperty('--nib-mark',nibRelLum(rgb)>.8?'#1C2C4A':c);
+}
+
 function showNibInCard(nib,fullIban){
   const card=document.getElementById('card');
   card.classList.remove('state-expired','state-minor');
@@ -2694,18 +2768,16 @@ function showNibInCard(nib,fullIban){
   const bank=bankData?.nome;
   const siglaText=SIGLA_OVERRIDES[code]||extractSigla(bank||'');
   let cs=null;if(fullIban)cs=ibanChecksum(fullIban);
-  let sub='';
-  if(bank)sub+=`<span class="val-sub ok">🏦 ${bank}</span>`;
-  if(cs!==null)sub+=`<span class="val-sub ${cs?'ok':'err'}">${cs?'✓ Checksum válido':'⚠ Checksum inválido — verifica o número'}</span>`;
   const body=document.getElementById('body');
   body.innerHTML='';
   const bankWrap=document.createElement('div');
   bankWrap.className='bank-row-wrap';bankWrap.dataset.bankCode=code;
-  const row=document.createElement('div');row.className='row copyable';
+  const row=document.createElement('div');row.className='row copyable nib-row';row.title='Clicar para copiar o NIB';
   const siglaHTML=(siglaText&&seqMode)?buildSiglaBubbleHTML('nibSiglaBubble',siglaText,bank):'';
-  row.innerHTML=`<span class="lbl">NIB</span><div class="val-wrap"><span class="val">${nib}</span>${sub}</div>${siglaHTML}`;
+  row.innerHTML=`${buildNibStatusHTML(cs)}${buildNibPanelHTML(nib,bank)}${siglaHTML}`;
   row.onclick=function(){cpRow(nib,this);};
   const bankColor=applyBankVisualToRow(row,code);
+  styleNibRow(row,bankColor);
   bankWrap.appendChild(row);
   if(bankColor){attachBankCustomBtn(row,bankWrap,code);}
   body.appendChild(bankWrap);
@@ -3765,14 +3837,15 @@ function renderAddedNibs(){
   addedNibs.forEach(({nib,bankData,siglaText},idx)=>{
     const addedCode=nib.slice(0,4);
     const bankWrap=document.createElement('div');bankWrap.className='bank-row-wrap nib-added-wrap';bankWrap.dataset.bankCode=addedCode;
-    const row=document.createElement('div');row.className='row copyable nib-added-row';
-    const bank=bankData?.nome;let sub='';
-    if(bank)sub+=`<span class="val-sub ok">🏦 ${bank}</span>`;
+    const row=document.createElement('div');row.className='row copyable nib-added-row nib-row';row.title='Clicar para copiar o NIB';
+    const bank=bankData?.nome;
     const bubbleId='nibSiglaBubbleAdded'+idx;
     const siglaHTML=(siglaText&&seqMode)?buildSiglaBubbleHTML(bubbleId,siglaText,bank):'';
-    row.innerHTML=`<span class="lbl">NIB (adicional)</span><div class="val-wrap"><span class="val">${nib}</span>${sub}</div>${siglaHTML}`;
+    let csAdd=null;try{csAdd=ibanChecksum('AO06'+nib);}catch(err){}
+    row.innerHTML=`${buildNibStatusHTML(csAdd)}${buildNibPanelHTML(nib,bank)}${siglaHTML}`;
     row.onclick=function(){cpRow(nib,this);};
     const addedColor=applyBankVisualToRow(row,addedCode);
+    styleNibRow(row,addedColor);
     bankWrap.appendChild(row);
     if(addedColor){attachBankCustomBtn(row,bankWrap,addedCode);}
     body.appendChild(bankWrap);

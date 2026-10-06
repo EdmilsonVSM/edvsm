@@ -4317,6 +4317,99 @@ document.getElementById('charCounter').textContent='0/500';
 // Inicializa tabs
 resetDocTabs();
 
+// ══════════════════════════════════════════════════════════
+// PERMANÊNCIA 12H — o contador de verificações, o registo, os duplicados,
+// o histórico (retroceder/avançar), a aba do registo e as notas sobrevivem a
+// atualizar a página, fechar o navegador ou reiniciar o PC, durante 12 horas
+// contadas desde a primeira verificação. Passado esse tempo começa tudo de novo.
+// Fica guardado apenas neste navegador/computador. Ajusta só PERSIST_HORAS.
+// ══════════════════════════════════════════════════════════
+const PERSIST_KEY='edvsm_sessao_v1';
+const PERSIST_HORAS=12;
+const PERSIST_MS=PERSIST_HORAS*60*60*1000;
+let persistInicio=0;
+let persistUltimaAssin='';
+function persistContadorTexto(){
+  const el=document.getElementById('sessionCounter');
+  if(el)el.textContent=`${sessionCount} verificaç${sessionCount===1?'ão':'ões'}`;
+}
+function persistTemDados(){
+  return sessionCount>0||sessionLog.length>0||seenDocNumbers.size>0||seenIbans.size>0||sessionHistory.length>0;
+}
+function persistMontar(nivel){
+  const notas=document.getElementById('notesField');
+  return {
+    v:1,inicio:persistInicio,
+    count:sessionCount,
+    log:nivel>=2?sessionLog.map(e=>({time:e.time,numero:e.numero,iban:e.iban})):sessionLog,
+    docs:Array.from(seenDocNumbers),ibans:Array.from(seenIbans),
+    hist:nivel>=1?[]:sessionHistory,pos:nivel>=1?-1:historyPos,
+    tab:activeLogTab,notes:notas?notas.value:''
+  };
+}
+function persistGuardar(){
+  try{
+    if(!persistTemDados()){
+      if(persistUltimaAssin!==''||persistInicio){localStorage.removeItem(PERSIST_KEY);persistUltimaAssin='';persistInicio=0;}
+      return;
+    }
+    if(!persistInicio)persistInicio=Date.now();
+    for(let nivel=0;nivel<=2;nivel++){
+      const txt=JSON.stringify(persistMontar(nivel));
+      if(nivel===0&&txt===persistUltimaAssin)return;
+      try{localStorage.setItem(PERSIST_KEY,txt);if(nivel===0)persistUltimaAssin=txt;return;}
+      catch(err){/* sem espaço: tenta de novo com menos dados */}
+    }
+  }catch(err){}
+}
+function persistAplicar(txt,soContagem){
+  let d=null;
+  try{d=JSON.parse(txt);}catch(err){return false;}
+  if(!d||d.v!==1||!d.inicio||(Date.now()-d.inicio)>PERSIST_MS)return false;
+  persistInicio=d.inicio;
+  sessionCount=Math.max(0,parseInt(d.count,10)||0);
+  sessionLog=(Array.isArray(d.log)?d.log:[]).filter(e=>e&&typeof e==='object'&&(e.numero||e.iban)).slice(-SESSION_LOG_MAX);
+  seenDocNumbers.clear();(Array.isArray(d.docs)?d.docs:[]).forEach(x=>{if(typeof x==='string'&&x)seenDocNumbers.add(x);});
+  seenIbans.clear();(Array.isArray(d.ibans)?d.ibans:[]).forEach(x=>{if(typeof x==='string'&&x)seenIbans.add(x);});
+  if(!soContagem){
+    sessionHistory=(Array.isArray(d.hist)?d.hist:[]).filter(e=>e&&typeof e==='object').slice(-SESSION_HISTORY_MAX);
+    historyPos=(Number.isInteger(d.pos)&&d.pos>=0&&d.pos<sessionHistory.length)?d.pos:sessionHistory.length-1;
+    if(d.tab==='numero'||d.tab==='iban')switchLogTab(d.tab);
+    const notas=document.getElementById('notesField');
+    if(notas&&typeof d.notes==='string'&&!notas.value)notas.value=d.notes;
+  }
+  persistContadorTexto();renderSessionLog();updateHistoryArrows();
+  persistUltimaAssin=JSON.stringify(persistMontar(0));
+  return true;
+}
+function persistRestaurar(){
+  let txt=null;
+  try{txt=localStorage.getItem(PERSIST_KEY);}catch(err){return;}
+  if(!txt)return;
+  if(!persistAplicar(txt,false)){try{localStorage.removeItem(PERSIST_KEY);}catch(err){}}
+}
+function persistReiniciar(){
+  sessionCount=0;sessionLog=[];seenDocNumbers.clear();seenIbans.clear();
+  sessionHistory=[];historyPos=-1;persistInicio=0;persistUltimaAssin='';
+  try{localStorage.removeItem(PERSIST_KEY);}catch(err){}
+  persistContadorTexto();renderSessionLog();updateHistoryArrows();
+}
+function persistVerificarExpiracao(){
+  if(persistInicio&&(Date.now()-persistInicio)>PERSIST_MS)persistReiniciar();
+}
+setInterval(persistGuardar,2000);
+setInterval(persistVerificarExpiracao,60000);
+window.addEventListener('pagehide',persistGuardar);
+window.addEventListener('beforeunload',persistGuardar);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')persistGuardar();});
+// Várias abas abertas: mantém contador, registo e duplicados iguais em todas
+window.addEventListener('storage',ev=>{
+  if(ev.key!==PERSIST_KEY)return;
+  if(ev.newValue===null){persistReiniciar();return;}
+  persistAplicar(ev.newValue,true);
+});
+persistRestaurar();
+
 </script>
 </body>
 </html>

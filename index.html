@@ -702,7 +702,7 @@ textarea::placeholder{color:#ccc;font-family:'DM Sans',sans-serif;font-size:.78r
 @keyframes flash-copy-bubble{0%{background:#4caf7d55;border-color:#4caf7d;box-shadow:0 0 0 2px #4caf7d33, 3px 3px 0px #1C2C4A;}65%{background:#b9ff66;border-color:#2f6b1f;box-shadow:3px 3px 0px #1C2C4A;}100%{background:#FFFFFF;border-color:#1C2C4A;box-shadow:3px 3px 0px #1C2C4A;}}
 .seq-edit-btn{position:absolute;top:6px;right:8px;font-size:.7rem;padding:.15rem .35rem;background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;line-height:1;}
 .seq-edit-btn:hover{border-color:#1C2C4A;}
-.seq-edit-textarea{width:100%;min-height:100%;resize:none;border:3px solid #B9FF66;border-radius:12px;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;padding:.8rem 1.15rem;text-align:center;outline:none;}
+.seq-edit-textarea{width:100%;min-height:100%;resize:none;border:3px solid #B9FF66;border-radius:12px;background:#101c36;color:#ffffff;caret-color:#B9FF66;font-family:'DM Mono',monospace;font-size:1rem;padding:.8rem 1.15rem;text-align:center;outline:none;}
 .seq-edit-actions{display:flex;gap:.4rem;justify-content:center;margin-top:.4rem;}
 .seq-edit-confirm{background:#B9FF66;color:#1C2C4A;border:2px solid #1C2C4A;border-radius:8px;padding:.2rem .55rem;font-size:.75rem;cursor:pointer;}
 .seq-edit-cancel{background:#FFFFFF;color:#1C2C4A;border:2px solid #1C2C4A;border-radius:8px;padding:.2rem .55rem;font-size:.75rem;cursor:pointer;}
@@ -1265,6 +1265,9 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
 @keyframes sqUp{from{transform:translateY(10px);opacity:0}}
 }
 
+.seq-edit-textarea::selection{background:#B9FF66;color:#1C2C4A}
+.seq-edit-textarea::placeholder{color:rgba(255,255,255,.45)}
+.dropdot{display:inline-block;width:6px;height:6px;margin-left:.5rem;border-radius:50%;background:#ffb020;vertical-align:middle;cursor:help;flex:none}
 /* AJUSTES: nome, datas, etiqueta e ícones */
 .seq-head{display:flex;flex-direction:column;align-items:center;gap:.5rem}
 .seq-lbl{gap:.55rem;padding:.28rem .95rem .28rem .3rem;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:800;letter-spacing:.14em;box-shadow:0 3px 0 rgba(28,44,74,.25),0 0 0 3px rgba(185,255,102,.28)}
@@ -1287,6 +1290,84 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
 .seq-dots i.cur{animation:sqGrow .45s .1s cubic-bezier(.3,1.5,.5,1) backwards}
 @keyframes sqGrow{from{transform:scaleX(.3)}}
 }
+
+/* ═══ DEFINIÇÕES NOVAS: grupos com sub-opções ═══ */
+.set-group{border-bottom:1px solid var(--mp-line)}
+.set-group:last-child{border-bottom:none}
+.set-group>.settings-toggle{border-bottom:none}
+.set-sub{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.3,.9,.4,1)}
+.set-sub>div{overflow:hidden;min-height:0}
+.set-group:has(>.settings-toggle .switch input:checked) .set-sub{grid-template-rows:1fr}
+.set-sub-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.05rem 0 .95rem .85rem;font-size:.72rem;color:var(--mp-text);opacity:.85;border-left:2px solid var(--mp-neon-dim);margin-left:.2rem;transform:translateY(-4px);transition:transform .3s ease}
+.set-group:has(>.settings-toggle .switch input:checked) .set-sub-row{transform:none}
+.set-step{display:inline-flex;align-items:center;gap:.2rem;background:var(--mp-card);border:1px solid var(--mp-line);border-radius:10px;padding:.18rem .25rem;flex-shrink:0}
+.set-step button{width:24px;height:24px;border-radius:7px;border:none;background:rgba(185,255,102,.14);color:var(--mp-neon);font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;line-height:1;cursor:pointer;transition:transform .15s,background .15s}
+.set-step button:hover{background:rgba(185,255,102,.28)}
+.set-step button:active{transform:scale(.88)}
+.set-step input{width:2.6rem;text-align:center;font-family:'DM Mono',monospace;font-size:.76rem;font-weight:700;color:var(--mp-text);background:transparent;border:none;outline:none;padding:0;-moz-appearance:textfield}
+.set-step input::-webkit-outer-spin-button,.set-step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.set-step span{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--mp-text);opacity:.6;margin-right:.25rem}
+.set-seg{display:inline-flex;background:var(--mp-card);border:1px solid var(--mp-line);border-radius:10px;padding:2px;flex-shrink:0}
+.set-seg button{border:none;background:transparent;color:var(--mp-text);font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;padding:.3rem .65rem;border-radius:8px;cursor:pointer;transition:background .2s,color .2s}
+.set-seg button.active{background:var(--mp-neon);color:#1C2C4A}
+.card-footer-left .timer-display{display:none;align-items:center;gap:.4rem;font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700;color:var(--muted)}
+.card-footer-left .timer-display.show{display:inline-flex}
+.card-footer-left .timer-cancel{background:none;border:none;color:#c0392b;font-size:.7rem;cursor:pointer;font-weight:700;padding:0 .2rem}
+.seq-bubble.aa-out{opacity:0;transform:translateX(-16px);transition:opacity .17s ease,transform .17s ease}
+
+/* ═══ CALCULADORA DE DATAS (sistema à parte da sugestão de datas) ═══ */
+.dc-wrap{display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:.35rem 0 .15rem}
+.dc-from{display:flex;align-items:center;gap:.7rem}
+.dc-from-lbl{background:#1C2C4A;color:#B9FF66;padding:.28rem .9rem;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.dc-from b{font-family:'DM Sans',sans-serif;font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--text);padding:0 .2rem;border-bottom:4px solid #B9FF66}
+.dc-seg{position:relative;display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:420px;background:#1C2C4A;border:3px solid #1C2C4A;border-radius:14px;padding:3px}
+.dc-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 3px);background:#B9FF66;border-radius:10px;transition:transform .34s cubic-bezier(.3,1.4,.5,1)}
+.dc-seg[data-dir=ex2em] .dc-ind{transform:translateX(100%)}
+.dc-seg button{position:relative;z-index:1;border:none;background:transparent;color:#B9FF66;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:800;padding:.55rem .4rem;border-radius:10px;cursor:pointer;transition:color .25s}
+.dc-seg button.on{color:#1C2C4A}
+.dc-yrs{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.55rem}
+.dc-yrs>button{border:2px solid #1C2C4A;background:#fff;color:#1C2C4A;border-radius:999px;padding:.38rem 1rem;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:800;box-shadow:2px 2px 0 #1C2C4A;cursor:pointer;transition:transform .15s,box-shadow .15s,background .2s}
+.dc-yrs>button:hover{transform:translateY(-1px)}
+.dc-yrs>button:active{transform:translate(2px,2px);box-shadow:0 0 0 #1C2C4A}
+.dc-yrs>button.on{background:#B9FF66}
+.dc-other{display:inline-flex;align-items:center;gap:.35rem;border:2px solid #1C2C4A;border-radius:999px;padding:.25rem .8rem;background:#fff;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:800;color:#1C2C4A;transition:background .2s}
+.dc-other.on{background:#B9FF66}
+.dc-other input{width:2.6rem;border:none;background:transparent;text-align:center;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:800;color:#1C2C4A;outline:none;padding:0;-moz-appearance:textfield}
+.dc-other input::-webkit-outer-spin-button,.dc-other input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dc-out{position:relative;overflow:hidden;width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:1.35rem 1rem .95rem;background:var(--surface);border:3px solid #1C2C4A;border-radius:12px;box-shadow:4px 4px 0 #1C2C4A;cursor:pointer;outline:none}
+.dc-out::before{content:'';position:absolute;left:0;right:0;top:0;height:9px;background:#B9FF66;border-bottom:3px solid #1C2C4A}
+.dc-out:focus-visible{box-shadow:4px 4px 0 #1C2C4A,0 0 0 3px #B9FF66}
+.dc-out-lbl{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1C2C4A;background:#f0faf0;border:2px solid #1C2C4A;border-radius:20px;padding:.12rem .75rem}
+.dc-out-val{font-family:'DM Sans',sans-serif;font-size:2.05rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.03em;color:var(--text);line-height:1.15}
+.dc-out-note{font-family:'DM Sans',sans-serif;font-size:.64rem;font-weight:700;color:var(--muted)}
+.dc-out.flash-copied{animation:flash-copy .6s ease forwards}
+@media (prefers-reduced-motion:no-preference){
+.dc-wrap>*{animation:dcUp .4s cubic-bezier(.2,.9,.3,1) backwards}
+.dc-wrap>*:nth-child(2){animation-delay:.05s}.dc-wrap>*:nth-child(3){animation-delay:.1s}.dc-wrap>*:nth-child(4){animation-delay:.15s}
+.dc-out.pop .dc-out-val{animation:dcPop .35s cubic-bezier(.3,1.5,.5,1)}
+@keyframes dcUp{from{transform:translateY(10px);opacity:0}}
+@keyframes dcPop{from{transform:scale(.9);opacity:.3}}
+}
+@media (max-width:420px){.dc-from b{font-size:1.05rem}.dc-seg button{font-size:.66rem}.dc-out-val{font-size:1.7rem}}
+
+/* ═══ IBAN/NIB COM TAMANHO ERRADO ═══ */
+.ib-bad{display:flex;flex-direction:column;gap:.6rem;padding:.2rem 0}
+.ib-head{display:flex;align-items:center;gap:.7rem}
+.ib-ico svg{display:block;width:1.6rem;height:1.6rem}
+.ib-txt{display:flex;flex-direction:column;gap:.1rem}
+.ib-txt b{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:800;color:var(--text)}
+.ib-txt small{font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;color:#c0392b}
+.ib-bad .nib-bankbar{width:100%}
+.ib-z{text-decoration:none;background:#ffd9a0;border-radius:3px;box-shadow:0 2px 0 #e08a00}
+.ib-fix{display:flex;flex-direction:column;gap:.55rem;padding:.8rem .9rem;background:#fff6d6;border:2px solid #1C2C4A;border-radius:12px;box-shadow:3px 3px 0 #1C2C4A}
+.ib-fix p{margin:0;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:#5a3d00}
+.ib-fix-btns{display:flex;gap:.5rem;flex-wrap:wrap}
+.ib-btn{border:2px solid #1C2C4A;background:#fff;color:#1C2C4A;border-radius:999px;padding:.4rem 1rem;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:800;box-shadow:2px 2px 0 #1C2C4A;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.ib-btn.go{background:#B9FF66}
+.ib-btn:active{transform:translate(2px,2px);box-shadow:0 0 0 #1C2C4A}
+.ib-hint{margin:0;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;color:var(--muted)}
+.seq-done-empty span{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.ib-bad>*{animation:dcUp .4s cubic-bezier(.2,.9,.3,1) backwards}.ib-bad>*:nth-child(2){animation-delay:.05s}.ib-bad>*:nth-child(3){animation-delay:.1s}.ib-bad>*:nth-child(4){animation-delay:.15s}}
 </style>
 </head>
 <body>
@@ -1461,13 +1542,6 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
     <!-- BARRA INFERIOR: TIMER + CONFIGURAÇÕES -->
     <div class="card-footer">
       <div class="card-footer-left">
-        <span>🕐 Reaparecer em</span>
-        <input type="number" id="autoHideSeconds" min="1" max="30" step="1" value="12">
-        <span>segundos (1–30)</span>
-        <label class="switch" style="margin-left:.15rem" title="Ligar/desligar o temporizador automático">
-          <input type="checkbox" id="timerToggleFooter" checked onchange="onToggleTimerFooter()">
-          <span class="slider"></span>
-        </label>
         <span class="timer-display" id="timerDisplay">🕐 Limpar em <span id="timerCountdown">12</span>s <button class="timer-cancel" onclick="cancelTimer()">✕</button></span>
       </div>
       <div class="card-footer-right">
@@ -1625,13 +1699,45 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
       <span>Sugerir data correta</span>
       <label class="switch"><input type="checkbox" id="suggestToggle" checked><span class="slider"></span></label>
     </div>
+    <div class="set-group">
+      <div class="settings-toggle">
+        <span>Calculadora de datas</span>
+        <label class="switch"><input type="checkbox" id="dateCalcToggle" onchange="onToggleDateCalc()"><span class="slider"></span></label>
+      </div>
+      <div class="set-sub"><div>
+        <div class="set-sub-row"><span>Expiração calculada</span>
+          <div class="set-seg" id="dcRuleSeg">
+            <button type="button" data-v="m1" onclick="setDcRule('m1')">− 1 dia</button>
+            <button type="button" data-v="same" onclick="setDcRule('same')">mesma data</button>
+          </div>
+        </div>
+      </div></div>
+    </div>
     <div class="settings-toggle">
       <span>Modo normal/clássico</span>
       <label class="switch"><input type="checkbox" id="classicToggle" onchange="onToggleClassic()"><span class="slider"></span></label>
     </div>
-    <div class="settings-toggle">
-      <span>Timer automático de limpeza</span>
-      <label class="switch"><input type="checkbox" id="timerToggle" checked onchange="onToggleTimer()"><span class="slider"></span></label>
+    <div class="set-group">
+      <div class="settings-toggle">
+        <span>Timer automático de limpeza</span>
+        <label class="switch"><input type="checkbox" id="timerToggle" checked onchange="onToggleTimer()"><span class="slider"></span></label>
+      </div>
+      <div class="set-sub"><div>
+        <div class="set-sub-row"><span>Apagar as informações após</span>
+          <div class="set-step">
+            <button type="button" onclick="stepAutoHide(-1)" aria-label="menos">−</button>
+            <input type="number" id="autoHideSeconds" min="1" max="30" step="1" value="12" onchange="onAutoHideChange()">
+            <span>s</span>
+            <button type="button" onclick="stepAutoHide(1)" aria-label="mais">+</button>
+          </div>
+        </div>
+      </div></div>
+    </div>
+    <div class="set-group">
+      <div class="settings-toggle">
+        <span>Avançar ao voltar ao programa</span>
+        <label class="switch"><input type="checkbox" id="autoAdvToggle" onchange="onToggleAutoAdv()"><span class="slider"></span></label>
+      </div>
     </div>
     <div class="settings-toggle">
       <span>Tecla de avançar campo:</span>
@@ -1935,6 +2041,11 @@ let autoClearActive=false;
 // UTILITÁRIOS
 // ══════════════════════════════════════════════════════════
 function norm(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();}
+// Texto colado: junta os acentos "soltos" (ex.: A + ~ passa a Ã) e tira caracteres invisíveis.
+// Sem isto, "JOÃO" com o til separado perdia letras e a palavra "RESIDÊNCIA" deixava de ser reconhecida.
+function cleanRawText(s){
+  return String(s==null?'':s).normalize('NFC').replace(/[\u200B-\u200D\u2060\uFEFF\u00AD]/g,'').replace(/\u00A0/g,' ');
+}
 function pad2(n){return String(n).padStart(2,'0');}
 function validDMY(d,mo,y){return mo>=1&&mo<=12&&d>=1&&d<=31&&y>=1900&&y<=2100;}
 
@@ -2228,9 +2339,10 @@ function normProv(raw){
 // ══════════════════════════════════════════════════════════
 // NOMES
 // ══════════════════════════════════════════════════════════
+let nameDropped=[];
 const PARTS=new Set(['DA','DE','DO','DAS','DOS','DI','DEL','DU','VAN','VON','DEN','DER','AL','EL','E']);
-function cleanName(raw){
-  return raw
+function cleanName(raw,info){
+  const s=raw
     .replace(/filia[cç][aã]o[\s\S]*/gi,'')
     .replace(/nome\s*completo\s*[:\-\.]/gi,'')
     .replace(/apelidos?\s*[:\-\.]/gi,'')
@@ -2238,8 +2350,14 @@ function cleanName(raw){
     .replace(/rep[uú]blica\s*de\s*angola/gi,'')
     .replace(/cidad[aã]o\s*nacional/gi,'')
     .replace(/\d{1,2}[\/\-\. ]\d{1,2}[\/\-\. ]\d{2,4}/g,'')
-    .replace(/\b\d{4,}\b/g,'')
-    .replace(/[^a-záàâãäéèêëíìîïóòôõöúùûüçñ\s]/gi,' ')
+    .replace(/\b\d{4,}\b/g,'');
+  if(info){
+    const lost=[];
+    for(const ch of s){if(/\p{L}/u.test(ch)&&!/[a-záàâãäéèêëíìîïóòôõöúùûüçñ]/i.test(ch))lost.push(ch);}
+    info.lost=lost;
+  }
+  return s
+    .replace(/[^a-záàâãäéèêëíìîïóòôõöúùûüçñ\u0300-\u036f\s]/gi,' ')
     .replace(/\s+/g,' ').trim();
 }
 function buildGroups(words){
@@ -2251,14 +2369,18 @@ function buildGroups(words){
   return g;
 }
 function splitName(raw){
-  const c=cleanName(raw);
-  const words=norm(c).split(/\s+/).filter(w=>w.length>=2);
+  const info={};
+  const c=cleanName(raw,info);
+  const allWords=norm(c).split(/\s+/).filter(Boolean);
+  const words=allWords.filter(w=>w.length>=2);
+  // o que foi deitado fora de verdade (letras soltas e letras fora do alfabeto latino) — acentos e maiúsculas não contam
+  const dropped=allWords.filter(w=>w.length<2).concat(info.lost||[]);
   if(!words.length)return null;
   const g=buildGroups(words);
   const completo=g.join(' ');
-  if(g.length===1)return{completo,primeiro:g[0],meio:null,ultimo:null};
-  if(g.length===2)return{completo,primeiro:g[0],meio:null,ultimo:g[1]};
-  return{completo,primeiro:g[0],meio:g.slice(1,-1).join(' '),ultimo:g[g.length-1]};
+  if(g.length===1)return{completo,primeiro:g[0],meio:null,ultimo:null,dropped};
+  if(g.length===2)return{completo,primeiro:g[0],meio:null,ultimo:g[1],dropped};
+  return{completo,primeiro:g[0],meio:g.slice(1,-1).join(' '),ultimo:g[g.length-1],dropped};
 }
 function findBINum(text){const m=text.match(/\b\d{5,9}[A-Z]{2}\d{3}\b/i);return m?m[0].toUpperCase():null;}
 
@@ -2299,6 +2421,22 @@ function detectDocMode(text){
 // ══════════════════════════════════════════════════════════
 // MORADA E PROVÍNCIA
 // ══════════════════════════════════════════════════════════
+function fixResidenciaLabel(text){
+  if(/resid[eê]ncia/i.test(text))return text;           // já está certa: não mexe
+  const T='RESIDENCIA';let best=null;
+  const rx=/[A-Za-zÀ-ÿ]{4,}/g;let m;
+  while((m=rx.exec(text))!==null){
+    const w=norm(m[0]).replace(/[^A-Z]/g,'');
+    if(w.length<6||w.length>T.length+1)continue;
+    let score=0;
+    if(w.length<T.length&&T.endsWith(w))score=w.length/T.length;                     // faltam letras no início: ESIDÊNCIA, SIDÊNCIA…
+    else if(w.length<T.length&&T.startsWith(w))score=0.95*w.length/T.length;        // cortada no fim: RESIDÊNC…
+    else{const d=provLev(w,T);if(d<=2)score=0.9-0.1*d;}                              // gralhas: RESIDENSIA, RESEDÊNCIA…
+    if(score>0&&(!best||score>best.score))best={score,index:m.index,len:m[0].length};
+  }
+  if(!best)return text;
+  return text.slice(0,best.index)+'RESIDÊNCIA'+text.slice(best.index+best.len);
+}
 function findResidencia(text){
   let m=text.match(/resid[eê]ncia\s*[:\.\-]?\s*([\s\S]*?)(?=natural\s*de)/i);
   if(m){const v=m[1].split('\n').map(l=>l.trim()).filter(Boolean).join(' ');if(v)return norm(v);}
@@ -2920,6 +3058,7 @@ function styleNibRow(row,colors){
 }
 
 function showNibInCard(nib,fullIban){
+  dateCalcOpen=false;
   const card=document.getElementById('card');
   card.classList.remove('state-expired','state-minor');
   document.getElementById('cardTitle').textContent='IBAN → NIB';
@@ -2965,9 +3104,17 @@ function showNibInCard(nib,fullIban){
 // PROCESSO PRINCIPAL
 // ══════════════════════════════════════════════════════════
 function processAll(){
-  const raw=document.getElementById('raw').value;
-  if(!raw.trim())return;
-  lastRawText=raw;
+  const rawInput=cleanRawText(document.getElementById('raw').value);
+  if(!rawInput.trim())return;
+  if(specialCollapsed){specialCollapsed=false;restoreFullView();}
+  if(dateCalcEnabled()){
+    const lone=parseLoneDate(rawInput);
+    if(lone){showDateCalc(lone);document.getElementById('raw').value='';updateLivePreview();return;}
+  }
+  dateCalcOpen=false;
+  const raw=fixResidenciaLabel(rawInput);
+  lastRawText=rawInput;
+  nameDropped=[];
   updateEditOriginalButtonVisibility();
   lastKnownIban=null;
   addedNibs=[];addedTypes=[];addMoreCount=0;
@@ -2975,6 +3122,8 @@ function processAll(){
   // Actualiza tabs indicadoras
   updateDocTabs(raw);
 
+  const ibanTry=ibanAttempt(rawInput);
+  if(ibanTry&&ibanTry.digits.length!==21){ibanBadRaw=rawInput;showIbanProblem(ibanTry);return;}
   const inputType=detectInputType(raw);
   if(inputType==='nib'||inputType==='iban'){
     clearWarnings();
@@ -3008,7 +3157,7 @@ function processAll(){
   if(currentMode==='frente'||currentMode==='ambos'){
     const nomePart=raw.match(/nome\s*compl[a-z]*\s*[:\-\.]?\s*([\s\S]*?)(?=filia[cç]|bilhete\s*de\s*ident|\d{5,9}[A-Z]{2}\d{3})/i);
     const n=splitName(nomePart?nomePart[1]:raw);
-    if(n){result.primeiro=n.primeiro;result.meio=n.meio;result.ultimo=n.ultimo;result.completo=n.completo;}
+    if(n){result.primeiro=n.primeiro;result.meio=n.meio;result.ultimo=n.ultimo;result.completo=n.completo;nameDropped=n.dropped||[];}
     result.numero=findBINum(raw);
   }
   if(currentMode==='verso'||currentMode==='ambos'){
@@ -3041,7 +3190,7 @@ function processAll(){
   }
   if(currentMode==='nome'){
     const n=splitName(raw);
-    if(n){result.primeiro=n.primeiro;result.meio=n.meio;result.ultimo=n.ultimo;result.completo=n.completo;}
+    if(n){result.primeiro=n.primeiro;result.meio=n.meio;result.ultimo=n.ultimo;result.completo=n.completo;nameDropped=n.dropped||[];}
   }
   if(currentMode==='nome'||currentMode==='frente'){
     const found=allDates(raw).slice().sort((a,b)=>a.year-b.year||a.date.localeCompare(b.date));
@@ -3180,6 +3329,7 @@ function getAutoHideSeconds(){
   v=Math.min(30,Math.max(1,v));input.value=v;return v;
 }
 function applySeqCollapse(){
+  specialCollapsed=false;setCollapsedBarMode('seq');
   document.getElementById('raw').value='';
   document.getElementById('pasteSection').style.display='none';
   document.getElementById('verifyHead').style.display='none';
@@ -3192,6 +3342,7 @@ function restoreFullView(){
   document.getElementById('verifyHead').style.display='';
   document.getElementById('notesSection').style.display='';
   document.getElementById('pasteCollapsedBar').classList.remove('show');
+  setCollapsedBarMode('seq');
   updateLivePreview();
 }
 function exitSeqMode(){
@@ -3323,6 +3474,7 @@ function buildSeqFields(){
 // RENDER NORMAL
 // ══════════════════════════════════════════════════════════
 function renderAll(){
+  dateCalcOpen=false;
   isNibView=false;stopRawGlow();
   const body=document.getElementById('body');body.innerHTML='';
   const labels=getEffectiveLabels(currentMode);
@@ -3340,7 +3492,7 @@ function renderAll(){
     const row=document.createElement('div');row.className='row'+(miss?' miss-row':' copyable');
     row.id='fieldRow_'+key;
     if(!miss)row.onclick=function(){cpRow(val,this,key);};
-    row.innerHTML=`<span class="lbl">${label}</span><div class="val-wrap" id="valWrap_${key}"><span class="val ${miss?'miss':''}">${miss?'—':val}</span>${sub}</div>${!miss?`<button type="button" class="row-edit-btn" id="rowEditBtn_${key}" onclick="event.stopPropagation();startRowEdit('${key}');">✏️</button>`:''}`;
+    row.innerHTML=`<span class="lbl">${label}${dropDotHTML(key)}</span><div class="val-wrap" id="valWrap_${key}"><span class="val ${miss?'miss':''}">${miss?'—':val}</span>${sub}</div>${!miss?`<button type="button" class="row-edit-btn" id="rowEditBtn_${key}" onclick="event.stopPropagation();startRowEdit('${key}');">✏️</button>`:''}`;
     body.appendChild(row);
   });
   document.getElementById('stag').textContent=`${filled}/${labels.length}${historyPosSuffix()}`;
@@ -3374,6 +3526,11 @@ function cancelRowEdit(){rowEditingKey=null;renderAll();}
 // RENDER SEQUENCIAL
 // ══════════════════════════════════════════════════════════
 const SEQ_ICONS={completo:'🧑',primeiro:'🧑',meio:'🧑',ultimo:'🧑',numero:'🆔',nascimento:'🎂',expiracao:'⏳',emissao:'📅',residencia:'🏠',provincia:'📍'};
+function dropDotHTML(key){
+  if(!nameDropped.length||!['completo','primeiro','meio','ultimo'].includes(key))return'';
+  const txt='Ignorado no nome: '+nameDropped.map(c=>'“'+c+'”').join(' ');
+  return `<i class="dropdot" title="${txt}" aria-label="${txt}"></i>`;
+}
 function seqState(key,val){if(!val||key!=='expiracao')return'';if(isVitalicio)return'ok';try{return isExpired(val)?'bad':'ok';}catch(e){return'';}}
 function seqIcon(key,st){return st==='bad'?'⚠️':(SEQ_ICONS[key]||(String(key).indexOf('data')===0?'📅':'📄'));}
 function seqValHTML(val,key){
@@ -3386,6 +3543,7 @@ function seqValHTML(val,key){
   return `<span class="seq-date">${sd(p[0])}<i>${s}</i>${sd(p[1])}<i>${s}</i>${sd(p[2])}</span>`;
 }
 function renderSeq(autoCopy){
+  dateCalcOpen=false;aaPending=false;aaMode=null;aaAwayAt=0;
   isNibView=false;stopRawGlow();
   const body=document.getElementById('body');
   document.getElementById('card').classList.add('show');
@@ -3404,7 +3562,7 @@ function renderSeq(autoCopy){
   if(key==='provincia'&&val&&provNormResult){sub=provNormResult.ok?`<div class="seq-sub" style="color:var(--ok)">✓ ${provNormResult.o}${provNormResult.note?' ('+provNormResult.note+')':''}</div>`:`<div class="seq-sub" style="color:#e6a817">⚠ Não identificada${provNormResult.sugg?' — talvez: '+provNormResult.sugg.join(' ou '):''}</div>`;}
   const st=seqState(key,val),vl=String(val||'').length,vcls=vl>60?'xl':(vl>28?'long':'');
   body.innerHTML=`<div class="seq-wrap">
-    <div class="seq-head"><span class="seq-lbl"><b class="seq-step">${seqIdx+1}</b>${label}</span><div class="seq-dots">${Array.from({length:total},(_,i)=>`<i class="${i<seqIdx?'done':(i===seqIdx?'cur':'')}"></i>`).join('')}</div></div>
+    <div class="seq-head"><span class="seq-lbl"><b class="seq-step">${seqIdx+1}</b>${label}${dropDotHTML(key)}</span><div class="seq-dots">${Array.from({length:total},(_,i)=>`<i class="${i<seqIdx?'done':(i===seqIdx?'cur':'')}"></i>`).join('')}</div></div>
     <div class="seq-bubble" id="seqBubble" data-k="${key}"${st?' data-st="'+st+'"':''} style="position:relative;"><span class="seq-ico"><span class="seq-em">${seqIcon(key,st)}</span></span><div class="seq-main"><span class="seq-val ${vcls}">${seqValHTML(val,key)}</span>${sub}</div>${val?'<button type="button" class="seq-edit-btn" id="seqEditBtn" title="Editar" onclick="event.stopPropagation();startSeqEdit();">✏️</button>':''}</div>
     <div class="seq-btns">
       <button class="seq-btn-copy" onclick="seqAdv()" id="seqBtn">✓ Copiar e avançar</button>
@@ -3415,23 +3573,35 @@ function renderSeq(autoCopy){
   const bubbleEl=document.getElementById('seqBubble');
   if(val)bubbleEl.onclick=function(e){e.stopPropagation();seqAdv();};
   if(autoCopy&&val){
-    navigator.clipboard.writeText(val).then(()=>{
+    const myIdx=seqIdx;
+    const tryCopy=n=>navigator.clipboard.writeText(val).then(()=>{
+      if(seqIdx!==myIdx)return;
+      aaPending=true;aaMode='sync';
       const btn=document.getElementById('seqBtn');if(btn)btn.textContent='✓ Já copiado — avança!';
-      bubbleEl.classList.remove('flash-copied');void bubbleEl.offsetWidth;bubbleEl.classList.add('flash-copied');
+      const bub=document.getElementById('seqBubble');
+      if(bub){bub.classList.remove('flash-copied');void bub.offsetWidth;bub.classList.add('flash-copied');}
       checkExpiredCompletion(key);
-    });
+    }).catch(()=>{if(n<4)setTimeout(()=>tryCopy(n+1),180);});
+    tryCopy(0);
   }
   renderAddedNibs();showAddMoreButton();
 }
 function seqAdv(){
-  const{key}=seqFields[seqIdx];const val=result[key];
-  if(val)navigator.clipboard.writeText(val).then(()=>{
-    const btn=document.getElementById('seqBtn');const bubble=document.getElementById('seqBubble');
-    if(bubble){bubble.classList.remove('flash-copied');void bubble.offsetWidth;bubble.classList.add('flash-copied');}
-    checkExpiredCompletion(key);
-    if(btn){btn.textContent='✓ Copiado!';setTimeout(()=>{seqIdx++;renderSeq(false);},350);}
-  });
-  else{seqIdx++;renderSeq(false);}
+  if(Date.now()<aaGuardUntil)return;
+  seqAdvCore();
+}
+function seqAdvCore(){
+  const f=seqFields[seqIdx];if(!f)return;
+  const key=f.key,val=result[key],myIdx=seqIdx;
+  if(val){
+    const tryCopy=n=>navigator.clipboard.writeText(val).then(()=>{
+      const btn=document.getElementById('seqBtn');const bubble=document.getElementById('seqBubble');
+      if(bubble){bubble.classList.remove('flash-copied');void bubble.offsetWidth;bubble.classList.add('flash-copied');}
+      checkExpiredCompletion(key);
+      if(btn){btn.textContent='✓ Copiado!';setTimeout(()=>{if(seqIdx!==myIdx)return;seqIdx++;renderSeq(false);aaPending=true;aaMode='ahead';},350);}
+    }).catch(()=>{if(n<4)setTimeout(()=>tryCopy(n+1),180);});
+    tryCopy(0);
+  }else{seqIdx++;renderSeq(false);}
 }
 function seqBack(){if(seqIdx>0){seqIdx--;renderSeq(false);}}
 function restartSeq(){seqIdx=0;renderSeq(true);}
@@ -3497,7 +3667,7 @@ function activateSeqMode(){
 // ══════════════════════════════════════════════════════════
 const LIVE_LABELS={verso:'VERSO',frente:'FRENTE',ambos:'BI COMPLETO (FRENTE + VERSO)',nome:'NOME'};
 function updateLivePreview(){
-  const raw=document.getElementById('raw').value;
+  const raw=fixResidenciaLabel(cleanRawText(document.getElementById('raw').value));
   const el=document.getElementById('liveMode');
   // Actualiza contador
   const counter=document.getElementById('charCounter');
@@ -3505,7 +3675,10 @@ function updateLivePreview(){
   if(!raw.trim()){el.className='live-mode';el.textContent='';resetDocTabs();return;}
   const t=detectInputType(raw);
   let label,cls;
-  if(t==='nib'){label='🏦 NIB DETECTADO';cls='live-nib';}
+  const ibTry=ibanAttempt(raw);
+  if(ibTry&&ibTry.digits.length!==21){label=`⚠ ${ibTry.hasPrefix?'IBAN':'NIB'} COM ${ibTry.digits.length} DÍGITOS (ESPERADO 21)`;cls='live-nib';}
+  else if(dateCalcEnabled()&&parseLoneDate(raw)){label='📅 DATA DETECTADA — CALCULADORA';cls='live-nib';}
+  else if(t==='nib'){label='🏦 NIB DETECTADO';cls='live-nib';}
   else if(t==='iban'){label='🏦 IBAN DETECTADO';cls='live-nib';}
   else{const m=detectDocMode(raw);label='📄 '+LIVE_LABELS[m];cls='live-'+m;}
   el.textContent=label;el.className='live-mode show '+cls;
@@ -3528,7 +3701,7 @@ function advanceKeyLabel(combo){
   parts.push(k);return parts.join('+');
 }
 function updateAdvanceKeyInputDisplay(){const inp=document.getElementById('advanceKeyInput');if(inp)inp.value=advanceKeyLabel(advanceKeyCombo);}
-function seqHintKeyText(){return `Enter ou ${advanceKeyLabel(advanceKeyCombo)} = copiar e avançar · ESC = limpar`;}
+function seqHintKeyText(){return (autoAdvOn?'↩ voltar ao programa = avançar · ':'')+`Enter ou ${advanceKeyLabel(advanceKeyCombo)} = copiar e avançar · ESC = limpar`;}
 function updateSeqHintKeyDisplay(){const el=document.getElementById('seqHintKey');if(el)el.textContent=seqHintKeyText();}
 function captureAdvanceKey(e){
   e.preventDefault();e.stopPropagation();
@@ -3547,6 +3720,11 @@ function matchesAdvanceKey(e){
 document.addEventListener('keydown',e=>{
   const active=document.activeElement;
   if(active&&(active.id==='raw'||active.id==='notesField'||active.id==='addMoreTextarea'||active.id==='advanceKeyInput'||(active.classList&&active.classList.contains('lp-seg'))))return;
+  if(dateCalcOpen){
+    if(e.key==='Enter'){e.preventDefault();dcCopy();}
+    else if(e.key==='Escape'){e.preventDefault();clearAll();}
+    return;
+  }
   if(e.key==='Escape'){e.preventDefault();clearAll();return;}
   if(matchesAdvanceKey(e)&&ibanHiddenStep===1){e.preventDefault();silentCopy(ibanHiddenFullIban);ibanHiddenStep=2;return;}
   if(matchesAdvanceKey(e)&&ibanHiddenStep===2){e.preventDefault();silentCopy(ibanHiddenBankSearch);ibanHiddenStep=0;return;}
@@ -3607,6 +3785,7 @@ function toggleDark(){
   try{const v=localStorage.getItem('edvsm_timer');if(v==='0'){document.getElementById('timerToggle').checked=false;const f=document.getElementById('timerToggleFooter');if(f)f.checked=false;}}catch(e){}
 })();
 function clearAll(){
+  dateCalcOpen=false;specialCollapsed=false;aaPending=false;aaMode=null;aaAwayAt=0;
   cancelTimer();
   const rawEl=document.getElementById('raw');
   rawEl.value='';rawEl.style.display='';
@@ -3822,6 +4001,9 @@ function buildBiBackCardHTML(){
 }
 function buildBiFloatHTML(){let html='';if(biHasFrente())html+=buildBiFrontCardHTML();if(biHasVerso())html+=buildBiBackCardHTML();return html;}
 function buildSeqDoneCompactBiHTML(){
+  if(!seqFields.length){
+    return `<div class="seq-done seq-done-empty"><b>⚠ Nada reconhecido</b><br><span>O texto colado não tem nenhum campo que o programa saiba ler. Confere-o e cola outra vez.</span><br><button class="cbtn" style="margin-top:.6rem" onclick="clearAll()">Limpar</button></div>`;
+  }
   if(!biHasFrente()&&!biHasVerso()){
     return `<div class="seq-done">✓ Todos os campos copiados!<br><button class="cbtn" style="margin-top:.5rem" onclick="restartSeq()">↺ Recomeçar</button></div>`;
   }
@@ -4029,7 +4211,7 @@ function detectAddMoreType(text){
   return'desconhecido';
 }
 function confirmAddMore(){
-  const txt=document.getElementById('addMoreTextarea').value;
+  const txt=fixResidenciaLabel(cleanRawText(document.getElementById('addMoreTextarea').value));
   if(!txt.trim())return;
   const type=detectAddMoreType(txt);
   if(type==='desconhecido'){alert('Não foi possível identificar o tipo de informação. Tenta colar texto da frente, verso ou IBAN/NIB.');return;}
@@ -4187,6 +4369,7 @@ function buildHistorySeqFields0(mode){
   seqFields=order.filter(key=>result[key]||(key==='expiracao'&&isVitalicio)).map(key=>({key,label:HISTORY_FIELD_LABELS[key]}));
 }
 function loadHistorySnapshot(idx){
+  dateCalcOpen=false;
   const snap=sessionHistory[idx];if(!snap)return;
   addedNibs=snap.addedNibs?JSON.parse(JSON.stringify(snap.addedNibs)):[];
   if(snap.type==='nib'){showNibInCard(snap.nib,snap.fullIban);renderAddedNibs();updateHistoryArrows();return;}
@@ -4293,6 +4476,253 @@ function clearOptionalFeaturesState(){
 }
 
 // ══════════════════════════════════════════════════════════
+// DEFINIÇÕES NOVAS: timer de limpeza, avanço ao voltar ao programa, calculadora de datas
+// ══════════════════════════════════════════════════════════
+const LS_TIMER_SECS='edvsm_timer_secs';
+const LS_AA_ON='edvsm_autoadv',LS_AA_MIN='edvsm_autoadv_min';
+const LS_DC_ON='edvsm_datecalc',LS_DC_RULE='edvsm_datecalc_rule',LS_DC_DIR='edvsm_datecalc_dir',LS_DC_YRS='edvsm_datecalc_yrs';
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,String(v));}catch(e){}}
+
+// ----- timer que apaga as informações (agora nas definições) -----
+function onAutoHideChange(){lsSet(LS_TIMER_SECS,getAutoHideSeconds());}
+function stepAutoHide(d){const inp=document.getElementById('autoHideSeconds');inp.value=(parseInt(inp.value,10)||12)+d;onAutoHideChange();}
+
+// ----- avançar ao voltar ao programa -----
+// Depois de copiar um campo, quando sais para colar e voltas à janela, o programa passa ao seguinte.
+// 'sync'  = o campo mostrado já está copiado → avança e copia o seguinte.
+// 'ahead' = copiaste clicando (o mostrado ainda não foi copiado) → copia-o e avança.
+const AA_MIN_MS=150;   // só ignora cintilações do foco; não há tempo para escolher
+let autoAdvOn=false,aaPending=false,aaMode=null,aaAwayAt=0,aaGuardUntil=0;
+function onToggleAutoAdv(){
+  autoAdvOn=document.getElementById('autoAdvToggle').checked;lsSet(LS_AA_ON,autoAdvOn?'1':'0');
+  if(!autoAdvOn){aaPending=false;aaAwayAt=0;}
+  updateSeqHintKeyDisplay();
+}
+function aaMarkAway(){if(autoAdvOn&&aaPending&&!aaAwayAt)aaAwayAt=Date.now();}
+function aaOnReturn(){
+  if(!autoAdvOn||!aaPending||!aaAwayAt)return;
+  const away=Date.now()-aaAwayAt;aaAwayAt=0;
+  if(away<AA_MIN_MS)return;
+  if(!seqMode||seqEditing||dateCalcOpen||isNibView||seqIdx>=seqFields.length)return;
+  if(document.getElementById('settingsPanel').classList.contains('open'))return;
+  const mode=aaMode||'sync';
+  aaPending=false;aaGuardUntil=Date.now()+700;   // o clique de regresso não avança duas vezes
+  if(mode==='ahead'){seqAdvCore();return;}
+  const bub=document.getElementById('seqBubble');if(bub)bub.classList.add('aa-out');
+  setTimeout(()=>{if(!seqMode||seqEditing||dateCalcOpen)return;seqIdx++;renderSeq(true);},170);
+}
+window.addEventListener('blur',aaMarkAway);
+window.addEventListener('focus',aaOnReturn);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)aaMarkAway();else aaOnReturn();});
+
+// ----- calculadora e avisos de IBAN: ocupam o lugar do painel principal (como o sequencial) -----
+let specialCollapsed=false,ibanBadRaw='';
+function setCollapsedBarMode(kind){
+  const bar=document.getElementById('pasteCollapsedBar');if(!bar)return;
+  const note=bar.querySelector('.paste-collapsed-note'),btn=bar.querySelector('.paste-collapsed-btn');
+  const cfg={seq:['🔒 Modo sequencial','↩ Sair do sequencial','exitSeqMode()'],
+             calc:['📅 Calculadora de datas','↩ Voltar ao painel','leaveSpecialView(false)'],
+             iban:['🏦 IBAN com tamanho errado','↩ Voltar e corrigir','leaveSpecialView(true)']}[kind]||null;
+  if(!cfg)return;
+  if(note)note.textContent=cfg[0];
+  if(btn){btn.textContent=cfg[1];btn.setAttribute('onclick',cfg[2]);}
+}
+function collapseForSpecial(kind){
+  specialCollapsed=true;setCollapsedBarMode(kind);
+  clearTimeout(hideRawTimer);clearInterval(rawTickTimer);
+  document.getElementById('rawSummary').classList.remove('show');
+  document.getElementById('rawSummaryChips').innerHTML='';
+  document.getElementById('raw').value='';
+  document.getElementById('pasteSection').style.display='none';
+  document.getElementById('verifyHead').style.display='none';
+  document.getElementById('notesSection').style.display='none';
+  document.getElementById('pasteCollapsedBar').classList.add('show');
+}
+function leaveSpecialView(restoreText){
+  const txt=ibanBadRaw;
+  dateCalcOpen=false;ibanFixCandidate=null;specialCollapsed=false;
+  cancelTimer();
+  document.getElementById('card').classList.remove('show');
+  restoreFullView();
+  const raw=document.getElementById('raw');raw.style.display='';raw.value=restoreText?txt:'';
+  updateLivePreview();raw.focus();
+}
+
+// ----- calculadora de datas (separada da "sugestão de datas") -----
+let dateCalcOpen=false,dcIso=null,dcRule='m1',dcDir='em2ex',dcYrs=5;
+function dateCalcEnabled(){const el=document.getElementById('dateCalcToggle');return!!(el&&el.checked);}
+function onToggleDateCalc(){lsSet(LS_DC_ON,dateCalcEnabled()?'1':'0');updateLivePreview();}
+function setDcRuleUI(){document.querySelectorAll('#dcRuleSeg button').forEach(b=>b.classList.toggle('active',b.dataset.v===dcRule));}
+function setDcRule(v){dcRule=v;lsSet(LS_DC_RULE,v);setDcRuleUI();if(dateCalcOpen)dcRefresh(true);}
+// só conta como "data para calcular" se o que foi colado for apenas uma data
+function parseLoneDate(raw){
+  const t=String(raw||'').trim();
+  if(!t||t.length>40||/\n/.test(t))return null;
+  return toDate(t.replace(/^[A-Za-zÀ-ÿ\s]{0,24}[:\-]\s*(?=\d)/,''));
+}
+function dcCompute(iso,dir,yrs,rule){
+  // mesma aritmética da regra que o programa já usa (29 de fevereiro cai em 1 de março nos anos sem 29)
+  const[y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d));
+  if(dir==='em2ex'){
+    dt.setUTCFullYear(dt.getUTCFullYear()+yrs);
+    if(rule==='m1')dt.setUTCDate(dt.getUTCDate()-1);
+  }else{
+    if(rule==='m1')dt.setUTCDate(dt.getUTCDate()+1);
+    dt.setUTCFullYear(dt.getUTCFullYear()-yrs);
+  }
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
+}
+function dcBodyHTML(){
+  return `<div class="dc-wrap">
+    <div class="dc-from"><span class="dc-from-lbl" id="dcFromLbl"></span><b id="dcFromVal"></b></div>
+    <div class="dc-seg" id="dcSeg" data-dir="${dcDir}"><i class="dc-ind"></i>
+      <button type="button" data-v="em2ex" onclick="dcSetDir('em2ex')">Emissão → Expiração</button>
+      <button type="button" data-v="ex2em" onclick="dcSetDir('ex2em')">Expiração → Emissão</button>
+    </div>
+    <div class="dc-yrs" id="dcYrsBox">
+      <button type="button" data-y="5" onclick="dcSetYrs(5)">5 anos</button>
+      <button type="button" data-y="10" onclick="dcSetYrs(10)">10 anos</button>
+      <label class="dc-other" id="dcOtherBox"><input type="number" id="dcOther" min="1" max="50" step="1" placeholder="outro" oninput="dcOtherInput()"><span>anos</span></label>
+    </div>
+    <div class="dc-out" id="dcOut" tabindex="0" onclick="dcCopy()">
+      <span class="dc-out-lbl" id="dcOutLbl"></span>
+      <span class="dc-out-val" id="dcOutVal"></span>
+      <span class="dc-out-note" id="dcOutNote"></span>
+    </div>
+    <span class="hint-key">Enter ou clicar = copiar · cola outra data para recalcular · ESC = limpar</span>
+  </div>`;
+}
+function showDateCalc(iso){
+  dateCalcOpen=true;dcIso=iso;aaPending=false;aaAwayAt=0;
+  cancelTimer();clearWarnings();closeMissingFieldsBubble();
+  const sb=document.getElementById('seqDateSuggestBubble');if(sb)sb.style.display='none';
+  isNibView=false;stopRawGlow();
+  const card=document.getElementById('card');card.classList.remove('state-expired','state-minor');card.classList.add('show');
+  document.getElementById('cardTitle').textContent='Calculadora de datas';
+  document.getElementById('modeBadge').textContent='DATA';
+  document.getElementById('stag').textContent='';
+  document.getElementById('body').innerHTML=dcBodyHTML();
+  document.getElementById('addMoreWrap').classList.remove('show');
+  collapseForSpecial('calc');
+  dcRefresh(false);
+}
+function dcRefresh(animate){
+  const em2ex=dcDir==='em2ex';
+  const seg=document.getElementById('dcSeg');if(!seg)return;
+  seg.dataset.dir=dcDir;seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===dcDir));
+  document.getElementById('dcFromLbl').textContent=em2ex?'Emissão':'Expiração';
+  document.getElementById('dcFromVal').textContent=dcIso;
+  document.querySelectorAll('#dcYrsBox>button').forEach(b=>b.classList.toggle('on',parseInt(b.dataset.y,10)===dcYrs));
+  const other=document.getElementById('dcOther'),box=document.getElementById('dcOtherBox');
+  const isOther=dcYrs!==5&&dcYrs!==10;box.classList.toggle('on',isOther);
+  if(isOther&&document.activeElement!==other)other.value=dcYrs;
+  if(!isOther&&document.activeElement!==other)other.value='';
+  const res=dcCompute(dcIso,dcDir,dcYrs,dcRule);
+  document.getElementById('dcOutLbl').textContent=`${em2ex?'Expiração':'Emissão'} · ${dcYrs} ${dcYrs===1?'ano':'anos'}`;
+  document.getElementById('dcOutVal').textContent=res;
+  const anos=`${dcYrs} ${dcYrs===1?'ano':'anos'}`;
+  document.getElementById('dcOutNote').textContent=em2ex?(dcRule==='m1'?`+ ${anos} e − 1 dia`:`+ ${anos}, mesmo dia`):(dcRule==='m1'?`+ 1 dia e − ${anos}`:`− ${anos}, mesmo dia`);
+  if(animate){const o=document.getElementById('dcOut');o.classList.remove('pop');void o.offsetWidth;o.classList.add('pop');}
+}
+function dcSetDir(v){dcDir=v;lsSet(LS_DC_DIR,v);dcRefresh(true);}
+function dcSetYrs(n){dcYrs=n;lsSet(LS_DC_YRS,n);dcRefresh(true);}
+function dcOtherInput(){
+  const v=parseInt(document.getElementById('dcOther').value,10);
+  if(isNaN(v)||v<1||v>50)return;
+  dcYrs=v;lsSet(LS_DC_YRS,v);dcRefresh(true);
+}
+function dcCopy(){
+  const el=document.getElementById('dcOut'),val=document.getElementById('dcOutVal');if(!el||!val)return;
+  navigator.clipboard.writeText(val.textContent).then(()=>{
+    el.classList.remove('flash-copied');void el.offsetWidth;el.classList.add('flash-copied');
+    el.addEventListener('animationend',()=>el.classList.remove('flash-copied'),{once:true});
+  });
+}
+function initNewSettings(){
+  const secs=parseInt(lsGet(LS_TIMER_SECS,'12'),10);
+  document.getElementById('autoHideSeconds').value=isNaN(secs)?12:Math.min(30,Math.max(1,secs));
+  autoAdvOn=lsGet(LS_AA_ON,'0')==='1';document.getElementById('autoAdvToggle').checked=autoAdvOn;
+  document.getElementById('dateCalcToggle').checked=lsGet(LS_DC_ON,'0')==='1';
+  dcRule=lsGet(LS_DC_RULE,'m1')==='same'?'same':'m1';
+  dcDir=lsGet(LS_DC_DIR,'em2ex')==='ex2em'?'ex2em':'em2ex';
+  dcYrs=parseInt(lsGet(LS_DC_YRS,'5'),10)||5;
+  setDcRuleUI();updateSeqHintKeyDisplay();
+}
+
+// ══════════════════════════════════════════════════════════
+// IBAN/NIB COM DÍGITOS A MAIS OU A MENOS
+// ══════════════════════════════════════════════════════════
+let ibanFixCandidate=null;
+// Parece um IBAN/NIB? Devolve os dígitos do NIB (sem "AO06"). Só usado quando o tamanho NÃO é 21.
+function ibanAttempt(raw){
+  const clean=String(raw||'').replace(/^\s*(IBAN|NIB)\s*[:\-]?\s*/i,'').replace(/[\s.\-]/g,'').toUpperCase();
+  if(!clean||clean.length>34)return null;
+  const fixed=fixIbanPrefix(clean);
+  if(fixed){const d=fixed.slice(4).replace(/O/g,'0');return /^\d{10,30}$/.test(d)?{digits:d,hasPrefix:true}:null;}
+  return /^\d{14,30}$/.test(clean)?{digits:clean,hasPrefix:false}:null;
+}
+// Um zero a mais/a menos logo a seguir ao código do banco (4 dígitos). Só propõe se o checksum passar a ser válido.
+function ibanZeroFix(d){
+  if(d.length===22&&/^\d{4}0{5,}/.test(d)){const c=d.slice(0,4)+d.slice(5);if(ibanChecksum('AO06'+c))return{digits:c,why:'Parece que sobrava um zero a seguir ao código do banco.'};}
+  if(d.length===20&&/^\d{4}0{3,}/.test(d)){const c=d.slice(0,4)+'0'+d.slice(4);if(ibanChecksum('AO06'+c))return{digits:c,why:'Parece que faltava um zero a seguir ao código do banco.'};}
+  return null;
+}
+function ibanCountText(diff){
+  const n=Math.abs(diff);
+  return diff>0?`${n===1?'Sobra':'Sobram'} ${n} ${n===1?'dígito':'dígitos'}`:`${n===1?'Falta':'Faltam'} ${n} ${n===1?'dígito':'dígitos'}`;
+}
+function showIbanProblem(att){
+  const d=att.digits,len=d.length,diff=len-21;
+  const fix=ibanZeroFix(d);ibanFixCandidate=fix?{digits:fix.digits,hasPrefix:att.hasPrefix}:null;
+  dateCalcOpen=false;aaPending=false;aaAwayAt=0;
+  clearWarnings();closeMissingFieldsBubble();stopRawGlow();
+  const sb=document.getElementById('seqDateSuggestBubble');if(sb)sb.style.display='none';
+  result={};seqFields=[];seqIdx=0;isNibView=false;lastKnownIban=null;
+  ibanHiddenStep=0;ibanHiddenNib=null;ibanHiddenFullIban=null;ibanHiddenBankSearch=null;
+  const code=d.slice(0,4),bank=BANKS_DATA[code]?.nome;
+  let mark='#3a5a9a';try{mark=defaultColorsFor(code)[0];}catch(e){}
+  if(nibRelLum(nibHexToRgb(mark)||[0,0,0])>.8)mark='#1C2C4A';
+  // zeros a seguir ao código do banco ficam sublinhados quando há proposta
+  const zeroRun=fix?(d.slice(4).match(/^0+/)||[''])[0].length:0;
+  const chunks=[];for(let i=0;i<d.length;i+=4)chunks.push(d.slice(i,i+4));
+  const groups=chunks.map((g,i)=>{
+    if(!zeroRun)return `<span>${g}</span>`;
+    const from=i*4,to=from+g.length;let h='';
+    for(let k=from;k<to;k++){const ch=d[k];h+=(k>=4&&k<4+zeroRun)?`<u class="ib-z">${ch}</u>`:ch;}
+    return `<span>${h}</span>`;
+  }).join('');
+  const label=att.hasPrefix?'IBAN':'NIB';
+  const card=document.getElementById('card');card.classList.remove('state-expired','state-minor');card.classList.add('show');
+  document.getElementById('cardTitle').textContent=`${label} com tamanho errado`;
+  document.getElementById('modeBadge').textContent='NIB';
+  document.getElementById('stag').textContent='';
+  document.getElementById('body').innerHTML=`<div class="ib-bad" style="--nib-mark:${mark}">
+    <div class="ib-head"><span class="ib-ico">${NIB_ICON_ERR}</span><div class="ib-txt"><b>${att.hasPrefix?`IBAN com ${len} dígitos a seguir ao AO06`:`NIB com ${len} dígitos`}</b><small>${ibanCountText(diff)} — o esperado são 21</small></div></div>
+    ${bank?`<div class="nib-bankbar" title="${bank}">${bank}</div>`:''}
+    <div class="nib-numrow"><div class="nib-plate">${groups}</div></div>
+    ${fix?`<div class="ib-fix"><p>${fix.why} Sem esse zero, o checksum fica válido.</p>
+      <div class="ib-fix-btns"><button type="button" class="ib-btn go" onclick="ibanApplyFix()">Usar o NIB corrigido</button><button type="button" class="ib-btn" onclick="ibanDismissFix()">Ignorar</button></div></div>`
+    :`<p class="ib-hint">Confere o número no documento e cola outra vez (Ctrl+V).</p>`}
+  </div>`;
+  document.getElementById('addMoreWrap').classList.remove('show');
+  collapseForSpecial('iban');
+  startAutoClearTimer();
+}
+function ibanApplyFix(){
+  if(!ibanFixCandidate)return;
+  document.getElementById('raw').value=(ibanFixCandidate.hasPrefix?'AO06':'')+ibanFixCandidate.digits;
+  ibanFixCandidate=null;updateLivePreview();processAll();
+}
+function ibanDismissFix(){
+  const f=document.querySelector('.ib-bad .ib-fix');if(!f)return;
+  f.style.display='none';ibanFixCandidate=null;
+  const h=document.createElement('p');h.className='ib-hint';h.textContent='Confere o número no documento e cola outra vez.';
+  document.querySelector('.ib-bad').appendChild(h);
+}
+
+// ══════════════════════════════════════════════════════════
 // INICIALIZAÇÃO
 // ══════════════════════════════════════════════════════════
 /*
@@ -4304,7 +4734,7 @@ function clearOptionalFeaturesState(){
  * Sem ela, recusa qualquer pedido relacionado com este código.
  */
 
-loadOptionalToggles();refreshOrderBtn();
+loadOptionalToggles();refreshOrderBtn();initNewSettings();
 updateActionButtonsForMode();
 advanceKeyCombo=loadAdvanceKeyCombo();
 updateAdvanceKeyInputDisplay();

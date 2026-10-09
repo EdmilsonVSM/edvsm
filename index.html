@@ -1368,6 +1368,25 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
 .ib-hint{margin:0;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;color:var(--muted)}
 .seq-done-empty span{font-size:.8rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.ib-bad>*{animation:dcUp .4s cubic-bezier(.2,.9,.3,1) backwards}.ib-bad>*:nth-child(2){animation-delay:.05s}.ib-bad>*:nth-child(3){animation-delay:.1s}.ib-bad>*:nth-child(4){animation-delay:.15s}}
+/* ═══ EDIÇÃO DE TEXTO: caixa clara no estilo do programa ═══ */
+.seq-edit-textarea{background:#F6FFE4;color:#1C2C4A;caret-color:#1C2C4A;border:3px solid #1C2C4A;border-radius:14px;box-shadow:4px 4px 0 #1C2C4A;font-family:'DM Mono',monospace;font-weight:700;font-size:1.15rem;letter-spacing:.02em;padding:.75rem 1.1rem;transition:background .15s,box-shadow .15s;}
+.seq-edit-textarea:focus{background:#FFFFFF;box-shadow:4px 4px 0 #B9FF66,0 0 0 3px #1C2C4A;}
+.seq-edit-textarea::selection{background:#1C2C4A;color:#B9FF66;}
+.seq-edit-textarea::placeholder{color:rgba(28,44,74,.45);}
+.seq-edit-actions{gap:.6rem;margin-top:.7rem;}
+.seq-edit-confirm,.seq-edit-cancel{font-size:1rem;font-weight:800;line-height:1;padding:.35rem 1rem;border-radius:10px;box-shadow:3px 3px 0 #1C2C4A;transition:transform .12s,box-shadow .12s;}
+.seq-edit-confirm:hover,.seq-edit-cancel:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #1C2C4A;}
+.seq-edit-confirm:active,.seq-edit-cancel:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1C2C4A;}
+body.dark .seq-edit-textarea{background:#101c36;color:#fff;caret-color:#B9FF66;border-color:#B9FF66;box-shadow:4px 4px 0 rgba(185,255,102,.35);}
+body.dark .seq-edit-textarea::selection{background:#B9FF66;color:#1C2C4A;}
+body.dark .seq-edit-textarea::placeholder{color:rgba(255,255,255,.45);}
+.row-edit-input{background:#F6FFE4;color:#1C2C4A;border-color:#1C2C4A;box-shadow:3px 3px 0 #1C2C4A;font-weight:700;}
+body.dark .row-edit-input{background:#101c36;color:#fff;border-color:#B9FF66;box-shadow:3px 3px 0 rgba(185,255,102,.35);}
+/* nota por baixo do IBAN (nome encontrado / correção feita) */
+.ib-note{margin:.55rem auto 0;width:fit-content;max-width:100%;text-align:center;font-family:'DM Mono',monospace;font-size:.68rem;font-weight:700;color:#1C2C4A;background:#f0faf0;border:1.5px solid #1C2C4A;border-radius:20px;padding:.2rem .8rem;}
+body.dark .ib-note{background:var(--surface);color:var(--text);border-color:var(--border);}
+.ib-opt{border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:.15rem;line-height:1.2;}
+.ib-opt small{font-family:'DM Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:.03em;}
 </style>
 </head>
 <body>
@@ -1712,6 +1731,10 @@ button:focus-visible{outline:2px solid #B9FF66;outline-offset:2px}
           </div>
         </div>
       </div></div>
+    </div>
+    <div class="settings-toggle">
+      <span>Corrigir IBAN automaticamente</span>
+      <label class="switch"><input type="checkbox" id="ibanFixToggle" checked onchange="onToggleIbanFix()"><span class="slider"></span></label>
     </div>
     <div class="settings-toggle">
       <span>Modo normal/clássico</span>
@@ -2299,7 +2322,7 @@ function provLev(a,b){
   }
   return prev[n];
 }
-function provTol(len){return len<=4?0:(len<=9?1:2);}
+function provTol(len){return len<=3?0:(len<=5?1:(len<=9?2:3));}
 function normProv(raw){
   const cleaned=norm(String(raw||'')).replace(/[^A-Z\s]/g,' ').replace(/\s+/g,' ').trim();
   if(!cleaned)return{o:cleaned,ok:false};
@@ -2387,6 +2410,143 @@ function findBINum(text){const m=text.match(/\b\d{5,9}[A-Z]{2}\d{3}\b/i);return 
 // ══════════════════════════════════════════════════════════
 // DETECÇÃO DE TIPO
 // ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+// IBAN/NIB COLADO "SUJO": letras, símbolos e nome da pessoa à mistura
+// ══════════════════════════════════════════════════════════
+const IBAN_NOT_DOC=/nome\s*compl|filia[cç]|resid[eê]nc|prov[ií]nc|nascimento|emitido|v[aá]lido|bilhete|\b\d{5,9}[A-Z]{2}\d{3}\b/i;
+const IBAN_NAME_STOP=/\b(IBAN|NIB|BANCO|CONTA|TITULAR|COPIAR|PARTILHAR|TRANSFER[A-Z]*|PAYPAY|KWIK|SALDO|KZ|AOA|MULTICAIXA|EXPRESS)\b/;
+function ibanOkName(str){
+  if(!str)return null;
+  if(/\d/.test(str))return null;
+  const n=norm(String(str).replace(/[^A-Za-zÀ-ÿ\s]/g,' ').replace(/\s+/g,' ').trim());
+  if(!n||IBAN_NAME_STOP.test(n))return null;
+  const w=n.split(' ').filter(x=>x.length>=2);
+  return w.length>=2?w.join(' '):null;
+}
+// Devolve {digits,hasPrefix,name,dropped} ou null. Só aceita texto curto com UMA linha que seja quase só números.
+function ibanClean(rawText){
+  const txt=String(rawText||'');
+  if(!txt.trim()||txt.length>300||IBAN_NOT_DOC.test(txt))return null;
+  const lines=txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length||lines.length>6)return null;
+  const cands=[];
+  lines.forEach((l,i)=>{
+    const body=l.replace(/^\s*(IBAN|NIB)\s*[:\-]?\s*/i,'');
+    const alnum=body.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+    const nd=(alnum.match(/\d/g)||[]).length;
+    if(nd>=10&&nd>=0.6*alnum.length)cands.push({i,body,alnum});
+  });
+  if(cands.length!==1)return null;
+  const c=cands[0];
+  let alnum=c.alnum,hasPrefix=false;
+  const fx=fixIbanPrefix(alnum);
+  if(fx){hasPrefix=true;alnum=fx.slice(4);}
+  let digits='';
+  for(const ch of alnum){if(ch>='0'&&ch<='9')digits+=ch;else if(ch==='O')digits+='0';}
+  if(digits.length<(hasPrefix?10:14)||digits.length>34)return null;
+  const symbols=c.body.replace(/[\s.\-]/g,'').replace(/[A-Za-z0-9]/g,'').length;
+  const dropped=(alnum.length-digits.length)+symbols;
+  // nome: linha logo acima do número; depois as outras acima; depois abaixo; por fim, na mesma linha
+  let name=ibanOkName(lines[c.i-1]);
+  for(let j=c.i-2;j>=0&&!name;j--)name=ibanOkName(lines[j]);
+  for(let j=c.i+1;j<lines.length&&!name;j++)name=ibanOkName(lines[j]);
+  if(!name)name=ibanOkName(c.body.split(/\d/)[0].replace(/\bA[O0]\s*$/i,''));
+  return{digits,hasPrefix,name,dropped};
+}
+function ibanAutoEnabled(){const el=document.getElementById('ibanFixToggle');return !el||el.checked;}
+function onToggleIbanFix(){lsSet('edvsm_iban_autofix',ibanAutoEnabled()?'1':'0');updateLivePreview();}
+function ibanCombos(arr,k,fn,start,cur){
+  start=start||0;cur=cur||[];
+  if(cur.length===k){fn(cur);return;}
+  for(let i=start;i<arr.length;i++){cur.push(arr[i]);ibanCombos(arr,k,fn,i+1,cur);cur.pop();}
+}
+// Verificação rápida do checksum (AO06 + 21 dígitos) só com números — permite testar milhares de hipóteses sem peso
+function ibanOkFast(d){
+  const t=String(d)+'102406';let r=0;
+  for(let i=0;i<t.length;i++){const c=t.charCodeAt(i)-48;if(c<0||c>9)return false;r=(r*10+c)%97;}
+  return r===1;
+}
+const _ibanMemo=new Map();
+// Procura a correção com o MÍNIMO de alterações (mantém o máximo de números do original):
+//  • números a mais → tira (zeros primeiro)      • números a menos → acrescenta
+//  • 21 dígitos mas checksum falha → troca dois vizinhos ou substitui um só número
+function ibanCandidates(d){
+  d=String(d||'');
+  if(_ibanMemo.has(d))return _ibanMemo.get(d);
+  const L=d.length,diff=L-21,out=[],seen=new Set();
+  const add=(c,why,rank)=>{
+    if(c.length!==21||seen.has(c)||!ibanOkFast(c))return;
+    seen.add(c);out.push({digits:c,why,rank,bankOk:!!BANKS_DATA[c.slice(0,4)]});
+  };
+  const pl=(n,a,b)=>n+' '+(n===1?a:b);
+  const skip=(idx)=>{const set=new Set(idx);return [...d].filter((_,i)=>!set.has(i)).join('');};
+  if(diff>0&&diff<=3){
+    const zi=[],all=[];for(let i=0;i<L;i++){all.push(i);if(d[i]==='0')zi.push(i);}
+    ibanCombos(zi,diff,idx=>add(skip(idx),'Tirei '+pl(diff,'zero','zeros'),0));
+    if(!out.length&&diff<=2)ibanCombos(all,diff,idx=>add(skip(idx),'Tirei '+pl(diff,'número','números'),1));
+  }else if(diff<0&&diff>=-2){
+    const k=-diff;
+    if(k===1){for(let p=0;p<=L;p++)for(let g=0;g<10;g++)add(d.slice(0,p)+g+d.slice(p),'Acrescentei 1 número ('+g+')',g===0?0:1);}
+    else{for(let p=0;p<=L;p++)for(let q=p;q<=L;q++){const t=d.slice(0,q)+'0'+d.slice(q);add(t.slice(0,p)+'0'+t.slice(p),'Acrescentei 2 zeros',2);}}
+  }else if(diff===0&&/^\d{21}$/.test(d)&&!ibanOkFast(d)){
+    for(let i=0;i<20;i++)if(d[i]!==d[i+1])add(d.slice(0,i)+d[i+1]+d[i]+d.slice(i+2),'Troquei 2 números vizinhos',0);
+    for(let i=0;i<21;i++)for(let g=0;g<10;g++){if(String(g)!==d[i])add(d.slice(0,i)+g+d.slice(i+1),'Substituí 1 número (posição '+(i+1)+')',1);}
+  }
+  out.sort((x,y)=>(y.bankOk-x.bankOk)||(x.rank-y.rank));
+  const wb=out.filter(o=>o.bankOk);
+  const res=(wb.length?wb:out).slice(0,4);
+  if(_ibanMemo.size>200)_ibanMemo.clear();
+  _ibanMemo.set(d,res);
+  return res;
+}
+function ibanFixList(d){
+  const out=[];
+  const z=(String(d).length!==21)?ibanZeroFix(d):null;
+  if(z)out.push({digits:z.digits,why:z.why.replace(/\.$/,''),legacy:true,bankOk:!!BANKS_DATA[z.digits.slice(0,4)]});
+  if(ibanAutoEnabled())ibanCandidates(d).forEach(c=>{if(!out.some(o=>o.digits===c.digits))out.push(c);});
+  return out.slice(0,4);
+}
+let ibanSkipFixOnce=false;
+let lastPayName='',pendingPayName='',pendingIbanNote='',ibanCardNote='';
+
+// ══════════════════════════════════════════════════════════
+// PALAVRAS-CHAVE DO BI COM MAIS TOLERÂNCIA (letras em falta, trocadas ou a mais)
+// ══════════════════════════════════════════════════════════
+const KW_FIX=[
+  {t:'PROVINCIA',out:'PROVÍNCIA'},
+  {t:'FILIACAO',out:'FILIAÇÃO'},
+  {t:'NASCIMENTO',out:'NASCIMENTO'},
+  {t:'IDENTIDADE',out:'IDENTIDADE'},
+  {t:'VITALICIO',out:'VITALÍCIO'},
+  {t:'BILHETE',out:'BILHETE'},
+  {t:'EMITIDO',out:'EMITIDO',follow:/^\s*[:.\-]?\s*e?m\b/i},
+  {t:'VALIDO',out:'VÁLIDO',follow:/^\s*[:.\-]?\s*at/i},
+  {t:'NATURAL',out:'NATURAL',follow:/^\s*[:.\-]?\s*d[eo]\b/i}
+];
+function fixKeywordLabels(text){
+  let t=fixResidenciaLabel(text);
+  const normAll=norm(t).replace(/[^A-Z]/g,' ');
+  for(const k of KW_FIX){
+    if(new RegExp('\\b'+k.t+'\\b').test(normAll))continue;      // já está certa: não mexe
+    const T=k.t,tol=T.length>=9?2:1;let best=null;
+    const rx=/[A-Za-zÀ-ÿ]{4,}/g;let m;
+    while((m=rx.exec(t))!==null){
+      const w=norm(m[0]).replace(/[^A-Z]/g,'');
+      if(w.length<4||Math.abs(w.length-T.length)>tol+1)continue;
+      let score=0;
+      const d=provLev(w,T);
+      if(Math.abs(w.length-T.length)<=tol&&d<=tol)score=1-0.15*d;
+      else if(T.length>=8&&w.length<T.length&&w.length>=Math.max(5,Math.ceil(.65*T.length))&&(T.endsWith(w)||T.startsWith(w)))score=.85*w.length/T.length;
+      if(!score)continue;
+      if(k.follow&&!k.follow.test(t.slice(m.index+m[0].length,m.index+m[0].length+12)))continue;
+      if(!best||score>best.score)best={score,index:m.index,len:m[0].length};
+    }
+    if(best)t=t.slice(0,best.index)+k.out+t.slice(best.index+best.len);
+  }
+  return t;
+}
+
 function fixIbanPrefix(s){
   if(s.length<4)return null;
   const a=s[0].toUpperCase(),b=s[1].toUpperCase();
@@ -2398,6 +2558,8 @@ function fixIbanPrefix(s){
   return'AO06'+s.slice(4);
 }
 function detectInputType(raw){
+  const _ic=ibanClean(raw);
+  if(_ic&&_ic.digits.length===21)return _ic.hasPrefix?'iban':'nib';
   let clean=raw.replace(/^\s*(IBAN|NIB)\s*[:\-]?\s*/i,'').replace(/[\s.\-]/g,'').toUpperCase();
   if(/^\d{21}$/.test(clean))return'nib';
   if(clean.length<=30){
@@ -2963,7 +3125,7 @@ function initSiglaBubble(id,colors,code){
   const list=Array.isArray(colors)?colors:[colors];
   bubbleEl.style.setProperty('--c1',list[0]);bubbleEl.style.setProperty('--c2',list[1]||list[0]);bubbleEl.style.setProperty('--c3',list[2]||list[1]||list[0]);
   bubbleEl.classList.remove('phase2','frozen',...SIGLA_FX_ALL);
-  delete bubbleEl.dataset.fxSource;
+  delete bubbleEl.dataset.fxSource;bubbleEl.dataset.bankCode=code;
   clearTimeout(SIGLA_PHASE_TIMERS[id]);clearTimeout(SIGLA_FX_TIMERS[id]);
   SIGLA_PHASE_TIMERS[id]=setTimeout(()=>{
     bubbleEl.classList.add('phase2');
@@ -2971,9 +3133,14 @@ function initSiglaBubble(id,colors,code){
   },2000);
   attachSiglaResize(bubbleEl);
 }
-function freezeSiglaBubble(id){
+// Ao clicar em pesquisar a animação NÃO pára. Se o efeito final ainda não tinha entrado (clique nos primeiros ~3 s),
+// entra já agora, uma única vez; se já estava a correr, não se mexe em nada (não repete a entrada).
+function settleSiglaBubble(id){
   const bubbleEl=document.getElementById(id);if(!bubbleEl)return;
-  clearTimeout(SIGLA_PHASE_TIMERS[id]);clearTimeout(SIGLA_FX_TIMERS[id]);bubbleEl.classList.add('phase2','frozen');
+  if(bubbleEl.dataset.fxSource)return;                 // efeito já ligado: deixa continuar
+  clearTimeout(SIGLA_PHASE_TIMERS[id]);clearTimeout(SIGLA_FX_TIMERS[id]);
+  bubbleEl.classList.add('phase2');
+  applySiglaFx(bubbleEl,bubbleEl.dataset.bankCode);
 }
 function attachSiglaResize(bubbleEl){
   if(bubbleEl.dataset.resizeReady)return;bubbleEl.dataset.resizeReady='1';
@@ -3057,8 +3224,9 @@ function styleNibRow(row,colors){
   panel.style.setProperty('--nib-mark',nibRelLum(rgb)>.8?'#1C2C4A':c);
 }
 
-function showNibInCard(nib,fullIban){
+function showNibInCard(nib,fullIban,payName){
   dateCalcOpen=false;
+  const cardNote=ibanCardNote;ibanCardNote='';
   const card=document.getElementById('card');
   card.classList.remove('state-expired','state-minor');
   document.getElementById('cardTitle').textContent='IBAN → NIB';
@@ -3085,6 +3253,7 @@ function showNibInCard(nib,fullIban){
   if(siglaHTML&&bankColor)initSiglaBubble('nibSiglaBubble',bankColor,code);
   const pills=[];
   if(fullIban)pills.push({lbl:'💳',val:'AO06'+nib,type:'iban'});
+  if(payName)pills.push({lbl:'👤',val:payName,type:'nome',title:'Copiar o nome: '+payName});
   if(bankData?.kw)pills.push({lbl:'🔍',val:bankData.kw,display:siglaText||bankData.kw,type:'pesquisa'});
   if(pills.length){
     const pillWrap=document.createElement('div');
@@ -3092,11 +3261,16 @@ function showNibInCard(nib,fullIban){
     pills.forEach(p=>{
       const pill=document.createElement('span');pill.className='iban-pill';
       pill.innerHTML=`<span class="pill-lbl">${p.lbl}</span><span class="pill-val">${p.display||p.val}</span>`;
-      pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')freezeSiglaBubble('nibSiglaBubble');};
+      if(p.title)pill.title=p.title;
+      pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')settleSiglaBubble('nibSiglaBubble');};
       pillWrap.appendChild(pill);
     });
     body.appendChild(pillWrap);
   }
+  const noteParts=[];
+  if(payName)noteParts.push('Nome: <b>'+payName+'</b>');
+  if(cardNote)noteParts.push(cardNote);
+  if(noteParts.length){const nt=document.createElement('div');nt.className='ib-note';nt.innerHTML=noteParts.join(' · ');body.appendChild(nt);}
   isNibView=true;card.classList.add('show');startRawGlow(bankColor);showAddMoreButton();
 }
 
@@ -3112,7 +3286,7 @@ function processAll(){
     if(lone){showDateCalc(lone);document.getElementById('raw').value='';updateLivePreview();return;}
   }
   dateCalcOpen=false;
-  const raw=fixResidenciaLabel(rawInput);
+  const raw=fixKeywordLabels(rawInput);
   lastRawText=rawInput;
   nameDropped=[];
   updateEditOriginalButtonVisibility();
@@ -3122,13 +3296,28 @@ function processAll(){
   // Actualiza tabs indicadoras
   updateDocTabs(raw);
 
-  const ibanTry=ibanAttempt(rawInput);
-  if(ibanTry&&ibanTry.digits.length!==21){ibanBadRaw=rawInput;showIbanProblem(ibanTry);return;}
-  const inputType=detectInputType(raw);
+  let ibanTry=ibanAttempt(rawInput);
+  let ibanNoteNow=pendingIbanNote;pendingIbanNote='';
+  let payNameNow=(ibanTry&&ibanTry.name)||pendingPayName||'';pendingPayName='';
+  let ibanFl=[];
+  const skipFix=ibanSkipFixOnce;ibanSkipFixOnce=false;
+  const csBad=!!(ibanTry&&ibanTry.digits.length===21&&!ibanOkFast(ibanTry.digits));
+  if(ibanTry&&ibanAutoEnabled()&&!skipFix&&(ibanTry.digits.length!==21||csBad)){
+    ibanFl=ibanFixList(ibanTry.digits);
+    if(ibanFl.length===1&&ibanFl[0].bankOk){
+      ibanNoteNow='Corrigido automaticamente: '+ibanFl[0].why.charAt(0).toLowerCase()+ibanFl[0].why.slice(1)+(ibanTry.digits.length!==21?' (o original tinha '+ibanTry.digits.length+' dígitos)':' (o checksum não passava)');
+      ibanTry={digits:ibanFl[0].digits,hasPrefix:ibanTry.hasPrefix,name:ibanTry.name,dropped:ibanTry.dropped};
+      ibanFl=[];
+    }
+  }
+  if(ibanTry&&(ibanTry.digits.length!==21||(csBad&&ibanFl.length>1&&!skipFix))){ibanBadRaw=rawInput;showIbanProblem(ibanTry);return;}
+  let rawN=raw;
+  if(ibanTry&&ibanTry.digits.length===21)rawN=(ibanTry.hasPrefix?'AO06':'')+ibanTry.digits;
+  const inputType=detectInputType(rawN);
   if(inputType==='nib'||inputType==='iban'){
     clearWarnings();
     closeMissingFieldsBubble();
-    const clean=raw.replace(/[\s.\-]/g,'').toUpperCase();
+    const clean=rawN.replace(/[\s.\-]/g,'').toUpperCase();
     let nibForSummary=null;
     let nibCardArg=null,ibanCardArg=null;
     if(inputType==='nib'){nibCardArg=clean;ibanCardArg='AO06'+clean;nibForSummary=clean;}
@@ -3139,8 +3328,11 @@ function processAll(){
     sessionCount++;
     document.getElementById('sessionCounter').textContent=`${sessionCount} verificaç${sessionCount===1?'ão':'ões'}`;
     if(nibForSummary)lastKnownIban='AO06'+nibForSummary;
+    lastPayName=payNameNow;
+    if(ibanTry&&ibanTry.dropped>0&&!ibanNoteNow)ibanNoteNow='Ignorei '+ibanTry.dropped+(ibanTry.dropped===1?' carácter':' caracteres')+' que não eram números';
     pushNibToSessionHistory(nibForSummary,nibForSummary?'AO06'+nibForSummary:null);
-    if(nibCardArg!==null)showNibInCard(nibCardArg,ibanCardArg);
+    ibanCardNote=ibanNoteNow;
+    if(nibCardArg!==null)showNibInCard(nibCardArg,ibanCardArg,payNameNow);
     showRawSummary(nibForSummary?`<span class="chip"><b>NIB:</b>${nibForSummary}</span>`:'<span class="chip">Sem dados</span>');
     startIbanHiddenFlow(nibForSummary);
     logSessionEntry('nib');
@@ -3667,7 +3859,7 @@ function activateSeqMode(){
 // ══════════════════════════════════════════════════════════
 const LIVE_LABELS={verso:'VERSO',frente:'FRENTE',ambos:'BI COMPLETO (FRENTE + VERSO)',nome:'NOME'};
 function updateLivePreview(){
-  const raw=fixResidenciaLabel(cleanRawText(document.getElementById('raw').value));
+  const raw=fixKeywordLabels(cleanRawText(document.getElementById('raw').value));
   const el=document.getElementById('liveMode');
   // Actualiza contador
   const counter=document.getElementById('charCounter');
@@ -3676,7 +3868,15 @@ function updateLivePreview(){
   const t=detectInputType(raw);
   let label,cls;
   const ibTry=ibanAttempt(raw);
-  if(ibTry&&ibTry.digits.length!==21){label=`⚠ ${ibTry.hasPrefix?'IBAN':'NIB'} COM ${ibTry.digits.length} DÍGITOS (ESPERADO 21)`;cls='live-nib';}
+  const _csBad=!!(ibTry&&ibTry.digits.length===21&&!ibanOkFast(ibTry.digits));
+  const _fl=(ibTry&&(ibTry.digits.length!==21||_csBad)&&ibanAutoEnabled())?ibanFixList(ibTry.digits):[];
+  if(ibTry&&(ibTry.digits.length!==21||(_csBad&&_fl.length))){
+    const _k=ibTry.hasPrefix?'IBAN':'NIB';
+    if(_fl.length===1&&_fl[0].bankOk)label=`🔧 ${_k} COM ${_csBad?'CHECKSUM INVÁLIDO':ibTry.digits.length+' DÍGITOS'} — SERÁ CORRIGIDO`;
+    else if(_csBad)label=`⚠ ${_k} COM CHECKSUM INVÁLIDO — ESCOLHE A CORREÇÃO`;
+    else label=`⚠ ${_k} COM ${ibTry.digits.length} DÍGITOS (ESPERADO 21)`;
+    cls='live-nib';
+  }
   else if(dateCalcEnabled()&&parseLoneDate(raw)){label='📅 DATA DETECTADA — CALCULADORA';cls='live-nib';}
   else if(t==='nib'){label='🏦 NIB DETECTADO';cls='live-nib';}
   else if(t==='iban'){label='🏦 IBAN DETECTADO';cls='live-nib';}
@@ -4202,6 +4402,8 @@ function cancelAddMore(){
   document.getElementById('addMoreBtn').style.display='';
 }
 function detectAddMoreType(text){
+  const _ic=ibanClean(text);
+  if(_ic&&_ic.digits.length===21)return'iban';
   const clean=text.replace(/[\s.\-]/g,'').toUpperCase();
   if(/^\d{21}$/.test(clean))return'iban';
   const fixed=fixIbanPrefix(clean);
@@ -4211,7 +4413,7 @@ function detectAddMoreType(text){
   return'desconhecido';
 }
 function confirmAddMore(){
-  const txt=fixResidenciaLabel(cleanRawText(document.getElementById('addMoreTextarea').value));
+  const txt=fixKeywordLabels(cleanRawText(document.getElementById('addMoreTextarea').value));
   if(!txt.trim())return;
   const type=detectAddMoreType(txt);
   if(type==='desconhecido'){alert('Não foi possível identificar o tipo de informação. Tenta colar texto da frente, verso ou IBAN/NIB.');return;}
@@ -4247,6 +4449,7 @@ function mergeAddMoreText(txt,type,forceReplace){
     const clean=txt.replace(/[\s.\-]/g,'').toUpperCase();let nib=null;
     if(/^\d{21}$/.test(clean))nib=clean;
     else{const fixed=fixIbanPrefix(clean);if(fixed)nib=fixed.slice(4).replace(/O/g,'0');}
+    if(!(nib&&/^\d{21}$/.test(nib))){const _ic=ibanClean(txt);if(_ic&&_ic.digits.length===21)nib=_ic.digits;}
     if(nib&&/^\d{21}$/.test(nib)){
       newResult.nib=nib;const code=nib.slice(0,4);const bankData=BANKS_DATA[code];
       const siglaText=SIGLA_OVERRIDES[code]||extractSigla(bankData?.nome||'');
@@ -4313,7 +4516,7 @@ function renderAddedNibs(){
       pills.forEach(p=>{
         const pill=document.createElement('span');pill.className='iban-pill';
         pill.innerHTML=`<span class="pill-lbl">${p.lbl}</span><span class="pill-val">${p.display||p.val}</span>`;
-        pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')freezeSiglaBubble(bubbleId);};
+        pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')settleSiglaBubble(bubbleId);};
         pillWrap.appendChild(pill);
       });
       body.appendChild(pillWrap);
@@ -4331,7 +4534,7 @@ function pushToSessionHistory(){
 }
 function pushNibToSessionHistory(nib,fullIban){
   if(!nib)return;
-  const snapshot={type:'nib',nib:nib,fullIban:fullIban,addedNibs:JSON.parse(JSON.stringify(addedNibs))};
+  const snapshot={type:'nib',nib:nib,fullIban:fullIban,payName:lastPayName||'',addedNibs:JSON.parse(JSON.stringify(addedNibs))};
   sessionHistory.push(snapshot);if(sessionHistory.length>SESSION_HISTORY_MAX)sessionHistory.shift();
   historyPos=sessionHistory.length-1;updateHistoryArrows();
 }
@@ -4372,7 +4575,7 @@ function loadHistorySnapshot(idx){
   dateCalcOpen=false;
   const snap=sessionHistory[idx];if(!snap)return;
   addedNibs=snap.addedNibs?JSON.parse(JSON.stringify(snap.addedNibs)):[];
-  if(snap.type==='nib'){showNibInCard(snap.nib,snap.fullIban);renderAddedNibs();updateHistoryArrows();return;}
+  if(snap.type==='nib'){showNibInCard(snap.nib,snap.fullIban,snap.payName||'');renderAddedNibs();updateHistoryArrows();return;}
   result=JSON.parse(JSON.stringify(snap.result));currentMode=snap.currentMode;isVitalicio=snap.isVitalicio;
   provNormResult=snap.provNormResult?JSON.parse(JSON.stringify(snap.provNormResult)):null;isExpiredDoc=snap.isExpiredDoc;
   seqIdx=0;buildHistorySeqFields(currentMode);
@@ -4385,8 +4588,16 @@ function loadHistorySnapshot(idx){
 // ══════════════════════════════════════════════════════════
 function nowHHMM(){const d=new Date();const hh=String(d.getHours()).padStart(2,'0');const mm=String(d.getMinutes()).padStart(2,'0');return hh+':'+mm;}
 function buildSessionLogSnapshot(type){
-  if(type==='nib')return{type:'nib',nib:lastKnownIban?lastKnownIban.slice(4):null,fullIban:lastKnownIban,addedNibs:JSON.parse(JSON.stringify(addedNibs))};
+  if(type==='nib')return{type:'nib',nib:lastKnownIban?lastKnownIban.slice(4):null,fullIban:lastKnownIban,payName:lastPayName||'',addedNibs:JSON.parse(JSON.stringify(addedNibs))};
   return{type:'doc',result:JSON.parse(JSON.stringify(result)),currentMode:currentMode,isVitalicio:isVitalicio,provNormResult:provNormResult?JSON.parse(JSON.stringify(provNormResult)):null,isExpiredDoc:isExpiredDoc,addedNibs:JSON.parse(JSON.stringify(addedNibs))};
+}
+// guarda no máximo SESSION_LOG_MAX BIs e SESSION_LOG_MAX IBANs (apaga os mais antigos de cada tipo)
+function trimSessionLog(){
+  ['numero','iban'].forEach(k=>{
+    let n=sessionLog.filter(e=>e[k]).length;
+    for(let i=0;i<sessionLog.length&&n>SESSION_LOG_MAX;i++){if(sessionLog[i][k]){sessionLog[i][k]=null;n--;}}
+  });
+  sessionLog=sessionLog.filter(e=>e.numero||e.iban);
 }
 function logSessionEntry(type){
   const numero=result&&result.numero?result.numero:null;const iban=lastKnownIban;
@@ -4395,14 +4606,14 @@ function logSessionEntry(type){
   if(isDup){showDuplicateToast();return;}
   if(numero)seenDocNumbers.add(numero);if(iban)seenIbans.add(iban);
   sessionLog.push({time:nowHHMM(),numero:numero,iban:iban,snapshot:buildSessionLogSnapshot(type)});
-  if(sessionLog.length>SESSION_LOG_MAX)sessionLog.shift();
+  trimSessionLog();
   renderSessionLog();
 }
 function reopenSessionLogEntry(entry){
   const snap=entry&&entry.snapshot;if(!snap)return;
   addedNibs=snap.addedNibs?JSON.parse(JSON.stringify(snap.addedNibs)):[];
   closeBiFloatAndSidebar();
-  if(snap.type==='nib'){if(!snap.nib)return;showNibInCard(snap.nib,snap.fullIban);renderAddedNibs();if(seqMode)applySeqCollapse();closeLogPanel();return;}
+  if(snap.type==='nib'){if(!snap.nib)return;showNibInCard(snap.nib,snap.fullIban,snap.payName||'');renderAddedNibs();if(seqMode)applySeqCollapse();closeLogPanel();return;}
   result=JSON.parse(JSON.stringify(snap.result));currentMode=snap.currentMode;isVitalicio=snap.isVitalicio;
   provNormResult=snap.provNormResult?JSON.parse(JSON.stringify(snap.provNormResult)):null;isExpiredDoc=snap.isExpiredDoc;
   seqIdx=0;buildHistorySeqFields(currentMode);
@@ -4645,6 +4856,7 @@ function initNewSettings(){
   document.getElementById('autoHideSeconds').value=isNaN(secs)?12:Math.min(30,Math.max(1,secs));
   autoAdvOn=lsGet(LS_AA_ON,'0')==='1';document.getElementById('autoAdvToggle').checked=autoAdvOn;
   document.getElementById('dateCalcToggle').checked=lsGet(LS_DC_ON,'0')==='1';
+  document.getElementById('ibanFixToggle').checked=lsGet('edvsm_iban_autofix','1')==='1';
   dcRule=lsGet(LS_DC_RULE,'m1')==='same'?'same':'m1';
   dcDir=lsGet(LS_DC_DIR,'em2ex')==='ex2em'?'ex2em':'em2ex';
   dcYrs=parseInt(lsGet(LS_DC_YRS,'5'),10)||5;
@@ -4657,6 +4869,8 @@ function initNewSettings(){
 let ibanFixCandidate=null;
 // Parece um IBAN/NIB? Devolve os dígitos do NIB (sem "AO06"). Só usado quando o tamanho NÃO é 21.
 function ibanAttempt(raw){
+  const ic=ibanClean(raw);
+  if(ic)return{digits:ic.digits,hasPrefix:ic.hasPrefix,name:ic.name,dropped:ic.dropped};
   const clean=String(raw||'').replace(/^\s*(IBAN|NIB)\s*[:\-]?\s*/i,'').replace(/[\s.\-]/g,'').toUpperCase();
   if(!clean||clean.length>34)return null;
   const fixed=fixIbanPrefix(clean);
@@ -4675,7 +4889,8 @@ function ibanCountText(diff){
 }
 function showIbanProblem(att){
   const d=att.digits,len=d.length,diff=len-21;
-  const fix=ibanZeroFix(d);ibanFixCandidate=fix?{digits:fix.digits,hasPrefix:att.hasPrefix}:null;
+  const fixList=ibanFixList(d);const fix=fixList[0]||null;
+  ibanFixCandidate=fix?{hasPrefix:att.hasPrefix,list:fixList,name:att.name||'',orig:d}:null;
   dateCalcOpen=false;aaPending=false;aaAwayAt=0;
   clearWarnings();closeMissingFieldsBubble();stopRawGlow();
   const sb=document.getElementById('seqDateSuggestBubble');if(sb)sb.style.display='none';
@@ -4685,7 +4900,7 @@ function showIbanProblem(att){
   let mark='#3a5a9a';try{mark=defaultColorsFor(code)[0];}catch(e){}
   if(nibRelLum(nibHexToRgb(mark)||[0,0,0])>.8)mark='#1C2C4A';
   // zeros a seguir ao código do banco ficam sublinhados quando há proposta
-  const zeroRun=fix?(d.slice(4).match(/^0+/)||[''])[0].length:0;
+  const zeroRun=(fix&&fix.legacy)?(d.slice(4).match(/^0+/)||[''])[0].length:0;
   const chunks=[];for(let i=0;i<d.length;i+=4)chunks.push(d.slice(i,i+4));
   const groups=chunks.map((g,i)=>{
     if(!zeroRun)return `<span>${g}</span>`;
@@ -4695,27 +4910,45 @@ function showIbanProblem(att){
   }).join('');
   const label=att.hasPrefix?'IBAN':'NIB';
   const card=document.getElementById('card');card.classList.remove('state-expired','state-minor');card.classList.add('show');
-  document.getElementById('cardTitle').textContent=`${label} com tamanho errado`;
+  document.getElementById('cardTitle').textContent=diff===0?`${label} com checksum inválido`:`${label} com tamanho errado`;
   document.getElementById('modeBadge').textContent='NIB';
   document.getElementById('stag').textContent='';
   document.getElementById('body').innerHTML=`<div class="ib-bad" style="--nib-mark:${mark}">
-    <div class="ib-head"><span class="ib-ico">${NIB_ICON_ERR}</span><div class="ib-txt"><b>${att.hasPrefix?`IBAN com ${len} dígitos a seguir ao AO06`:`NIB com ${len} dígitos`}</b><small>${ibanCountText(diff)} — o esperado são 21</small></div></div>
+    <div class="ib-head"><span class="ib-ico">${NIB_ICON_ERR}</span><div class="ib-txt"><b>${diff===0?`${label} com 21 dígitos, mas o checksum não passa`:(att.hasPrefix?`IBAN com ${len} dígitos a seguir ao AO06`:`NIB com ${len} dígitos`)}</b><small>${diff===0?'Há um número trocado ou errado':ibanCountText(diff)+' — o esperado são 21'}</small></div></div>
     ${bank?`<div class="nib-bankbar" title="${bank}">${bank}</div>`:''}
     <div class="nib-numrow"><div class="nib-plate">${groups}</div></div>
-    ${fix?`<div class="ib-fix"><p>${fix.why} Sem esse zero, o checksum fica válido.</p>
-      <div class="ib-fix-btns"><button type="button" class="ib-btn go" onclick="ibanApplyFix()">Usar o NIB corrigido</button><button type="button" class="ib-btn" onclick="ibanDismissFix()">Ignorar</button></div></div>`
+    ${fixList.length?`<div class="ib-fix"><p>${fixList.length>1?'Estas hipóteses passam no checksum — escolhe a certa:':fix.why+'. Assim o checksum fica válido.'}</p>
+      <div class="ib-fix-btns">${fixList.map((f,k)=>`<button type="button" class="ib-btn go ib-opt" onclick="ibanApplyFix(${k})"><span>${f.why}</span><small>${ibanDiffHTML(d,f.digits)}</small></button>`).join('')}<button type="button" class="ib-btn" onclick="ibanDismissFix()">Ignorar</button></div></div>`
     :`<p class="ib-hint">Confere o número no documento e cola outra vez (Ctrl+V).</p>`}
   </div>`;
   document.getElementById('addMoreWrap').classList.remove('show');
   collapseForSpecial('iban');
   startAutoClearTimer();
 }
-function ibanApplyFix(){
+// número em grupos de 4; quando o tamanho é igual, sublinha os números que mudaram
+function ibanDiffHTML(orig,cand){
+  const same=orig.length===cand.length;let h='';
+  for(let i=0;i<cand.length;i++){
+    if(i&&i%4===0)h+=' ';
+    h+=(same&&cand[i]!==orig[i])?'<u class="ib-z">'+cand[i]+'</u>':cand[i];
+  }
+  return h;
+}
+function ibanApplyFix(k){
   if(!ibanFixCandidate)return;
-  document.getElementById('raw').value=(ibanFixCandidate.hasPrefix?'AO06':'')+ibanFixCandidate.digits;
+  const f=ibanFixCandidate.list[k||0];if(!f)return;
+  pendingPayName=ibanFixCandidate.name||'';
+  pendingIbanNote='Corrigido: '+f.why.charAt(0).toLowerCase()+f.why.slice(1);
+  document.getElementById('raw').value=(ibanFixCandidate.hasPrefix?'AO06':'')+f.digits;
   ibanFixCandidate=null;updateLivePreview();processAll();
 }
 function ibanDismissFix(){
+  if(ibanFixCandidate&&ibanFixCandidate.orig&&ibanFixCandidate.orig.length===21){
+    // tamanho certo, só o checksum falha: usa o IBAN como foi colado
+    pendingPayName=ibanFixCandidate.name||'';ibanSkipFixOnce=true;
+    document.getElementById('raw').value=(ibanFixCandidate.hasPrefix?'AO06':'')+ibanFixCandidate.orig;
+    ibanFixCandidate=null;processAll();return;
+  }
   const f=document.querySelector('.ib-bad .ib-fix');if(!f)return;
   f.style.display='none';ibanFixCandidate=null;
   const h=document.createElement('p');h.className='ib-hint';h.textContent='Confere o número no documento e cola outra vez.';
@@ -4798,7 +5031,8 @@ function persistAplicar(txt,soContagem){
   if(!d||d.v!==1||!d.inicio||(Date.now()-d.inicio)>PERSIST_MS)return false;
   persistInicio=d.inicio;
   sessionCount=Math.max(0,parseInt(d.count,10)||0);
-  sessionLog=(Array.isArray(d.log)?d.log:[]).filter(e=>e&&typeof e==='object'&&(e.numero||e.iban)).slice(-SESSION_LOG_MAX);
+  sessionLog=(Array.isArray(d.log)?d.log:[]).filter(e=>e&&typeof e==='object'&&(e.numero||e.iban)).slice(-SESSION_LOG_MAX*2);
+  trimSessionLog();
   seenDocNumbers.clear();(Array.isArray(d.docs)?d.docs:[]).forEach(x=>{if(typeof x==='string'&&x)seenDocNumbers.add(x);});
   seenIbans.clear();(Array.isArray(d.ibans)?d.ibans:[]).forEach(x=>{if(typeof x==='string'&&x)seenIbans.add(x);});
   if(!soContagem){

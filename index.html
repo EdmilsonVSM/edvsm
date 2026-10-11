@@ -1387,6 +1387,67 @@ body.dark .row-edit-input{background:#101c36;color:#fff;border-color:#B9FF66;box
 body.dark .ib-note{background:var(--surface);color:var(--text);border-color:var(--border);}
 .ib-opt{border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:.15rem;line-height:1.2;}
 .ib-opt small{font-family:'DM Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:.03em;}
+/* ═══ REGISTO DA SESSÃO — remaster ═══ */
+.log-panel .lg-title{display:flex;flex-direction:column;gap:.25rem;line-height:1.1;}
+.log-panel .session-log-count{display:block;font-size:.66rem;letter-spacing:0;text-transform:none;opacity:1;color:var(--mp-muted);}
+.log-panel .log-tabs{gap:.45rem;padding:.8rem .9rem .55rem;}
+.log-panel .log-tab{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem .6rem;border-width:2px;border-radius:12px;}
+.lg-badge{font-family:'DM Mono',monospace;font-size:.66rem;font-weight:700;min-width:1.55rem;text-align:center;padding:.06rem .45rem;border-radius:999px;background:rgba(185,255,102,.14);color:var(--mp-neon);transition:background .2s,color .2s;}
+.log-panel .log-tab.active .lg-badge{background:var(--mp-neon);color:#1C2C4A;}
+.log-panel .log-tab.active{box-shadow:0 3px 0 var(--mp-neon-dim);}
+.lg-tools{display:flex;flex-direction:column;gap:.5rem;padding:.1rem .9rem .6rem;background:var(--mp-bg);}
+.lg-search{display:flex;align-items:center;gap:.5rem;background:var(--mp-card);border:2px solid var(--mp-line);border-radius:12px;padding:.1rem .7rem;transition:border-color .15s,box-shadow .15s;}
+.lg-search:focus-within{border-color:var(--mp-neon);box-shadow:0 0 0 3px rgba(185,255,102,.14);}
+.lg-search span{font-size:.8rem;opacity:.75;}
+.lg-search input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--mp-text);font-family:'DM Mono',monospace;font-size:.78rem;padding:.5rem 0;box-shadow:none;}
+.lg-search input::placeholder{color:var(--mp-muted);opacity:.8;}
+.lg-meter{display:flex;align-items:center;gap:.6rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--mp-muted);}
+.lg-meter-bar{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}
+.lg-meter-bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#7fd13b,var(--mp-neon));transition:width .5s cubic-bezier(.2,.9,.3,1),background .3s;}
+.lg-meter.warn .lg-meter-bar i{background:linear-gradient(90deg,#ffb020,#ffd45e);}
+.lg-meter.warn #logMeterTxt{color:#ffd45e;}
+.lg-meter.full .lg-meter-bar i{background:linear-gradient(90deg,#ff8a5c,#ffb020);}
+.lg-meter.full #logMeterTxt{color:#ffb020;}
+.log-panel .session-log-body{gap:.5rem;padding:.1rem .9rem .9rem;}
+.lg-hour{flex:0 0 auto;display:flex;align-items:center;gap:.55rem;position:sticky;top:0;z-index:2;background:var(--mp-bg);padding:.3rem 0 .15rem;margin-top:.2rem;font-family:'Syne',sans-serif;font-weight:800;font-size:.62rem;letter-spacing:.16em;color:var(--mp-muted);}
+.lg-hour::after{content:'';flex:1;height:1px;background:var(--mp-line);}
+.log-panel .session-log-row{flex:0 0 auto;position:relative;display:grid;align-items:center;gap:.25rem .6rem;border:2px solid var(--mp-line);border-radius:14px;padding:.55rem .65rem .55rem .85rem;background:var(--mp-card);box-shadow:0 3px 0 rgba(0,0,0,.28);white-space:normal;overflow:hidden;text-overflow:clip;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;}
+.log-panel .session-log-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--rowc,var(--mp-neon-dim));}
+.log-panel .session-log-row.lg-bi{grid-template-columns:auto 1fr auto auto;grid-template-areas:"chip val time open";}
+.log-panel .session-log-row.lg-iban{grid-template-columns:auto 1fr auto auto;grid-template-areas:"chip bank time open" "val val val val";}
+.log-panel .session-log-row:hover{border-color:var(--mp-neon-dim);background:var(--mp-card-hover);transform:translateY(-2px);box-shadow:0 5px 0 rgba(0,0,0,.3),0 0 18px rgba(185,255,102,.08);}
+.log-panel .session-log-row:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.3);}
+.lg-chip{grid-area:chip;min-width:2.5rem;text-align:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.7rem;letter-spacing:.06em;color:var(--chipfg,#fff);background:var(--rowc,#3a5a9a);border-radius:8px;padding:.18rem .5rem;}
+.lg-bi .lg-chip{background:rgba(185,255,102,.14);color:var(--mp-neon);text-shadow:none;border:1px solid var(--mp-neon-dim);}
+.lg-bank{grid-area:bank;font-family:'DM Sans',sans-serif;font-size:.68rem;color:var(--mp-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.lg-val{grid-area:val;font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;letter-spacing:.02em;color:var(--mp-text);min-width:0;overflow-wrap:anywhere;}
+.lg-iban .lg-val{font-size:.76rem;padding-top:.05rem;}
+.lg-l{color:var(--mp-neon);font-weight:700;margin:0 .12em;}
+.lg-p{font-style:normal;color:var(--mp-muted);font-size:.9em;}
+.lg-time{grid-area:time;font-family:'DM Mono',monospace;font-size:.64rem;color:var(--mp-muted);background:rgba(255,255,255,.05);border:1px solid var(--mp-line);border-radius:999px;padding:.05rem .5rem;}
+.lg-latest .lg-time{color:#1C2C4A;background:var(--mp-neon);border-color:var(--mp-neon);font-weight:700;}
+.lg-reopen{grid-area:open;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;border:1.5px solid var(--mp-line);background:transparent;color:var(--mp-muted);font-size:.78rem;line-height:1;cursor:pointer;transition:background .15s,color .15s,border-color .15s,transform .15s;}
+.lg-reopen:hover{background:rgba(185,255,102,.14);color:var(--mp-neon);border-color:var(--mp-neon);transform:scale(1.12);}
+.log-panel .session-log-row.copied::after{content:'✓ copiado';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--mp-neon);color:#1C2C4A;font-family:'Syne',sans-serif;font-weight:800;font-size:.82rem;letter-spacing:.06em;animation:lgCopied 1.15s ease forwards;}
+.lg-empty{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:2.2rem 1rem;text-align:center;}
+.lg-empty b{font-family:'Syne',sans-serif;font-size:.9rem;color:var(--mp-text);}
+.lg-empty small{font-size:.7rem;color:var(--mp-muted);max-width:22ch;line-height:1.4;}
+.lg-empty-ico{font-size:1.9rem;}
+.lg-foot{flex-shrink:0;padding:.6rem .9rem;text-align:center;font-size:.64rem;color:var(--mp-muted);background:var(--mp-bg);border-top:1px solid var(--mp-line);}
+.lg-foot b{color:var(--mp-neon);font-weight:700;}
+.log-panel-head .cbtn.confirm,.log-panel-head .cbtn.confirm:hover:not(:disabled){background:var(--mp-danger-bg);border-color:var(--mp-danger);color:var(--mp-danger);}
+@keyframes lgCopied{0%{transform:translateY(100%);}16%,72%{transform:translateY(0);}100%{transform:translateY(0);opacity:0;}}
+@media (prefers-reduced-motion:no-preference){
+  .lg-enter{animation:lgIn .42s cubic-bezier(.2,.9,.3,1) backwards;animation-delay:calc(var(--i,0)*24ms);}
+  .lg-new{animation:lgNew .6s cubic-bezier(.2,.9,.3,1);}
+  .lg-latest .lg-time{animation:lgPulse 2.4s ease-in-out infinite;}
+  @keyframes lgIn{from{opacity:0;transform:translateX(18px) scale(.97);}}
+  @keyframes lgNew{0%{opacity:0;transform:translateY(-12px) scale(.96);box-shadow:0 0 0 0 rgba(185,255,102,.7);}55%{box-shadow:0 0 0 7px rgba(185,255,102,0);}100%{opacity:1;transform:none;}}
+  @keyframes lgPulse{0%,100%{box-shadow:0 0 0 0 rgba(185,255,102,.55);}50%{box-shadow:0 0 0 4px rgba(185,255,102,0);}}
+}
+.ib-fix-btns:not(.open) .ib-extra{display:none;}
+.ib-fix-btns .ib-more{border-style:dashed;}
+.ib-fix-btns.open{max-height:46vh;overflow-y:auto;padding:.1rem .15rem .35rem 0;}
 </style>
 </head>
 <body>
@@ -1687,19 +1748,24 @@ body.dark .ib-note{background:var(--surface);color:var(--text);border-color:var(
 <div class="log-overlay" id="logOverlay" onclick="closeLogPanel()"></div>
 <div class="log-panel" id="logPanel">
   <div class="log-panel-head">
-    <span><span class="lp-title-accent">Registo</span> da sessão <span class="session-log-count" id="sessionLogCount">· 0 entradas</span></span>
+    <span class="lg-title"><span><span class="lp-title-accent">Registo</span> da sessão</span><span class="session-log-count" id="sessionLogCount">· 0 registos</span></span>
     <div style="display:flex;gap:.4rem;align-items:center;">
-      <button class="cbtn" onclick="clearSessionLog()">Limpar registo</button>
+      <button class="cbtn" id="logClearBtn" onclick="clearSessionLog()">Limpar</button>
       <button class="log-close-btn" onclick="closeLogPanel()" title="Fechar">✕</button>
     </div>
   </div>
   <div class="log-tabs" id="logTabs">
-    <button class="log-tab active" id="logTabNumero" onclick="switchLogTab('numero')">Nº BI</button>
-    <button class="log-tab" id="logTabIban" onclick="switchLogTab('iban')">IBAN</button>
+    <button class="log-tab active" id="logTabNumero" onclick="switchLogTab('numero')"><span>Nº BI</span><b class="lg-badge" id="logCntNumero">0</b></button>
+    <button class="log-tab" id="logTabIban" onclick="switchLogTab('iban')"><span>IBAN</span><b class="lg-badge" id="logCntIban">0</b></button>
+  </div>
+  <div class="lg-tools">
+    <label class="lg-search"><span aria-hidden="true">🔍</span><input id="logSearch" type="search" placeholder="Procurar por número…" oninput="onLogSearch()" autocomplete="off" spellcheck="false"></label>
+    <div class="lg-meter" id="logMeter" title="Cada separador guarda os últimos registos; quando enche, o mais antigo sai sozinho"><div class="lg-meter-bar"><i id="logMeterFill"></i></div><span id="logMeterTxt">0/50</span></div>
   </div>
   <div class="session-log-body" id="sessionLogBody">
     <div class="session-log-empty">Nenhum registo ainda nesta sessão</div>
   </div>
+  <div class="lg-foot"><b>Clique</b> copia · <b>↗</b> ou duplo clique reabre</div>
 </div>
 
 <!-- CONFIGURAÇÕES (movidas do dropdown para um painel próprio) -->
@@ -2415,7 +2481,8 @@ function findBINum(text){const m=text.match(/\b\d{5,9}[A-Z]{2}\d{3}\b/i);return 
 // IBAN/NIB COLADO "SUJO": letras, símbolos e nome da pessoa à mistura
 // ══════════════════════════════════════════════════════════
 const IBAN_NOT_DOC=/nome\s*compl|filia[cç]|resid[eê]nc|prov[ií]nc|nascimento|emitido|v[aá]lido|bilhete|\b\d{5,9}[A-Z]{2}\d{3}\b/i;
-const IBAN_NAME_STOP=/\b(IBAN|NIB|BANCO|CONTA|TITULAR|COPIAR|PARTILHAR|TRANSFER[A-Z]*|PAYPAY|KWIK|SALDO|KZ|AOA|MULTICAIXA|EXPRESS)\b/;
+const IBAN_NAME_STOP=/\b(IBAN|NIB|BANCO|CONTA|TITULAR|COPIAR|PARTILHAR|TRANSFER[A-Z]*|PAYPAY|KWIK|SALDO|KZ|AOA|MULTICAIXA|EXPRESS|COMPROVATIVO|EFETUAD[AO]|RECEBID[AO]|DATA|VALOR|DESTINAT[A-Z]*|BENEFICI[A-Z]*|REFER[A-Z]*|MONTANTE|ORIGEM|REMETENTE)\b/;
+const IBAN_LOGO=/\b(KWIK|KWIKPAY|PAYPAY|MULTICAIXA|EXPRESS|UNITEL|MONEY)\b/;
 function ibanOkName(str){
   if(!str)return null;
   if(/\d/.test(str))return null;
@@ -2423,6 +2490,26 @@ function ibanOkName(str){
   if(!n||IBAN_NAME_STOP.test(n))return null;
   const w=n.split(' ').filter(x=>x.length>=2);
   return w.length>=2?w.join(' '):null;
+}
+// Nome em 1, 2 ou 3 linhas logo acima do número (o logótipo "KWik" é ignorado, mesmo no meio do nome)
+function ibanNameAbove(lines,i){
+  const parts=[];
+  for(let j=i-1;j>=0&&parts.length<3;j--){
+    const raw=lines[j];
+    if(/\d/.test(raw))break;
+    const letters=raw.replace(/[^A-Za-zÀ-ÿ\s]/g,' ').replace(/\s+/g,' ').trim();
+    if(!letters)break;
+    const n=norm(letters);
+    if(IBAN_LOGO.test(n))continue;
+    if(IBAN_NAME_STOP.test(n))break;
+    const lt=letters.replace(/[^A-Za-zÀ-ÿ]/g,'');
+    const up=(lt.match(/[A-ZÀ-Þ]/g)||[]).length;
+    if(parts.length&&up<.7*lt.length)break;
+    if(lt.length<2)break;
+    parts.unshift(n);
+  }
+  const name=parts.join(' ').trim();
+  return name&&name.split(' ').length>=2?name:null;
 }
 // Devolve {digits,hasPrefix,name,dropped} ou null. Só aceita texto curto com UMA linha que seja quase só números.
 function ibanClean(rawText){
@@ -2448,8 +2535,8 @@ function ibanClean(rawText){
   const symbols=c.body.replace(/[\s.\-]/g,'').replace(/[A-Za-z0-9]/g,'').length;
   const dropped=(alnum.length-digits.length)+symbols;
   // nome: linha logo acima do número; depois as outras acima; depois abaixo; por fim, na mesma linha
-  let name=ibanOkName(lines[c.i-1]);
-  for(let j=c.i-2;j>=0&&!name;j--)name=ibanOkName(lines[j]);
+  let name=ibanNameAbove(lines,c.i);
+  for(let j=c.i-1;j>=0&&!name;j--)name=ibanOkName(lines[j]);
   for(let j=c.i+1;j<lines.length&&!name;j++)name=ibanOkName(lines[j]);
   if(!name)name=ibanOkName(c.body.split(/\d/)[0].replace(/\bA[O0]\s*$/i,''));
   return{digits,hasPrefix,name,dropped};
@@ -2471,13 +2558,19 @@ const _ibanMemo=new Map();
 // Procura a correção com o MÍNIMO de alterações (mantém o máximo de números do original):
 //  • números a mais → tira (zeros primeiro)      • números a menos → acrescenta
 //  • 21 dígitos mas checksum falha → troca dois vizinhos ou substitui um só número
+// sequências não decrescentes de k posições em [0,n) (permite repetir a mesma posição)
+function ibanMulti(n,k,fn,start,cur){
+  start=start||0;cur=cur||[];
+  if(cur.length===k){fn(cur);return;}
+  for(let i=start;i<n;i++){cur.push(i);ibanMulti(n,k,fn,i,cur);cur.pop();}
+}
 function ibanCandidates(d){
   d=String(d||'');
   if(_ibanMemo.has(d))return _ibanMemo.get(d);
   const L=d.length,diff=L-21,out=[],seen=new Set();
   const add=(c,why,rank)=>{
     if(c.length!==21||seen.has(c)||!ibanOkFast(c))return;
-    seen.add(c);out.push({digits:c,why,rank,bankOk:!!BANKS_DATA[c.slice(0,4)]});
+    seen.add(c);out.push({digits:c,why,rank,bankOk:!!BANKS_DATA[c.slice(0,4)],keep:c.slice(0,4)===d.slice(0,4)});
   };
   const pl=(n,a,b)=>n+' '+(n===1?a:b);
   const skip=(idx)=>{const set=new Set(idx);return [...d].filter((_,i)=>!set.has(i)).join('');};
@@ -2485,17 +2578,29 @@ function ibanCandidates(d){
     const zi=[],all=[];for(let i=0;i<L;i++){all.push(i);if(d[i]==='0')zi.push(i);}
     ibanCombos(zi,diff,idx=>add(skip(idx),'Tirei '+pl(diff,'zero','zeros'),0));
     if(!out.length&&diff<=2)ibanCombos(all,diff,idx=>add(skip(idx),'Tirei '+pl(diff,'número','números'),1));
-  }else if(diff<0&&diff>=-2){
+  }else if(diff<0&&diff>=-6){
+    // Faltam k números: usa TODOS os que já tem (na mesma ordem) e preenche os que faltam
+    // 1) o OCR costuma perder números repetidos → repete vizinhos;  2) zeros em falta;  3) com 1 só em falta, qualquer número
     const k=-diff;
-    if(k===1){for(let p=0;p<=L;p++)for(let g=0;g<10;g++)add(d.slice(0,p)+g+d.slice(p),'Acrescentei 1 número ('+g+')',g===0?0:1);}
-    else{for(let p=0;p<=L;p++)for(let q=p;q<=L;q++){const t=d.slice(0,q)+'0'+d.slice(q);add(t.slice(0,p)+'0'+t.slice(p),'Acrescentei 2 zeros',2);}}
+    ibanMulti(L,k,idx=>{
+      const cnt=new Array(L).fill(0);idx.forEach(i=>cnt[i]++);
+      let t='';for(let j=0;j<L;j++)t+=d[j].repeat(1+cnt[j]);
+      add(t,'Acrescentei '+pl(k,'número repetido','números repetidos'),0);
+    });
+    ibanMulti(L+1,k,idx=>{
+      const cnt=new Array(L+1).fill(0);idx.forEach(i=>cnt[i]++);
+      let t='';for(let j=0;j<=L;j++){t+='0'.repeat(cnt[j]);if(j<L)t+=d[j];}
+      add(t,'Acrescentei '+pl(k,'zero','zeros'),k===1?0:1);
+    });
+    if(k===1){for(let p=0;p<=L;p++)for(let g=1;g<10;g++)add(d.slice(0,p)+g+d.slice(p),'Acrescentei 1 número ('+g+')',1);}
   }else if(diff===0&&/^\d{21}$/.test(d)&&!ibanOkFast(d)){
     for(let i=0;i<20;i++)if(d[i]!==d[i+1])add(d.slice(0,i)+d[i+1]+d[i]+d.slice(i+2),'Troquei 2 números vizinhos',0);
     for(let i=0;i<21;i++)for(let g=0;g<10;g++){if(String(g)!==d[i])add(d.slice(0,i)+g+d.slice(i+1),'Substituí 1 número (posição '+(i+1)+')',1);}
   }
-  out.sort((x,y)=>(y.bankOk-x.bankOk)||(x.rank-y.rank));
+  out.sort((x,y)=>(y.bankOk-x.bankOk)||(y.keep-x.keep)||(x.rank-y.rank));
   const wb=out.filter(o=>o.bankOk);
-  const res=(wb.length?wb:out).slice(0,4);
+  const pool=wb.length?wb:out;
+  const res=pool.slice(0,40);res.total=pool.length;
   if(_ibanMemo.size>200)_ibanMemo.clear();
   _ibanMemo.set(d,res);
   return res;
@@ -2504,8 +2609,9 @@ function ibanFixList(d){
   const out=[];
   const z=(String(d).length!==21)?ibanZeroFix(d):null;
   if(z)out.push({digits:z.digits,why:z.why.replace(/\.$/,''),legacy:true,bankOk:!!BANKS_DATA[z.digits.slice(0,4)]});
-  if(ibanAutoEnabled())ibanCandidates(d).forEach(c=>{if(!out.some(o=>o.digits===c.digits))out.push(c);});
-  return out.slice(0,4);
+  let total=out.length;
+  if(ibanAutoEnabled()){const cs=ibanCandidates(d);total=Math.max(total,cs.total||cs.length);cs.forEach(c=>{if(!out.some(o=>o.digits===c.digits))out.push(c);});}
+  const res=out.slice(0,40);res.total=total;return res;
 }
 let ibanSkipFixOnce=false;
 let lastPayName='',pendingPayName='',pendingIbanNote='',ibanCardNote='';
@@ -3304,7 +3410,7 @@ function processAll(){
   const csBad=!!(ibanTry&&ibanTry.digits.length===21&&!ibanOkFast(ibanTry.digits));
   if(ibanTry&&ibanAutoEnabled()&&!skipFix&&(ibanTry.digits.length!==21||csBad)){
     ibanFl=ibanFixList(ibanTry.digits);
-    if(ibanFl.length===1&&ibanFl[0].bankOk){
+    if(ibanFl.length===1&&ibanFl[0].bankOk&&Math.abs(ibanTry.digits.length-21)<=2){
       ibanNoteNow='Corrigido automaticamente: '+ibanFl[0].why.charAt(0).toLowerCase()+ibanFl[0].why.slice(1)+(ibanTry.digits.length!==21?' (o original tinha '+ibanTry.digits.length+' dígitos)':' (o checksum não passava)');
       ibanTry={digits:ibanFl[0].digits,hasPrefix:ibanTry.hasPrefix,name:ibanTry.name,dropped:ibanTry.dropped};
       ibanFl=[];
@@ -3872,7 +3978,7 @@ function updateLivePreview(){
   const _fl=(ibTry&&(ibTry.digits.length!==21||_csBad)&&ibanAutoEnabled())?ibanFixList(ibTry.digits):[];
   if(ibTry&&(ibTry.digits.length!==21||(_csBad&&_fl.length))){
     const _k=ibTry.hasPrefix?'IBAN':'NIB';
-    if(_fl.length===1&&_fl[0].bankOk)label=`🔧 ${_k} COM ${_csBad?'CHECKSUM INVÁLIDO':ibTry.digits.length+' DÍGITOS'} — SERÁ CORRIGIDO`;
+    if(_fl.length===1&&_fl[0].bankOk&&Math.abs(ibTry.digits.length-21)<=2)label=`🔧 ${_k} COM ${_csBad?'CHECKSUM INVÁLIDO':ibTry.digits.length+' DÍGITOS'} — SERÁ CORRIGIDO`;
     else if(_csBad)label=`⚠ ${_k} COM CHECKSUM INVÁLIDO — ESCOLHE A CORREÇÃO`;
     else label=`⚠ ${_k} COM ${ibTry.digits.length} DÍGITOS (ESPERADO 21)`;
     cls='live-nib';
@@ -4629,37 +4735,109 @@ function showDuplicateToast(){
   toast.textContent='⚠️ Este número já foi processado nesta sessão!';toast.classList.remove('show');void toast.offsetWidth;toast.classList.add('show');
   clearTimeout(dupToastTimer);dupToastTimer=setTimeout(()=>{toast.classList.remove('show');},3000);
 }
-function renderSessionLog(){
+let logSearchTerm='',logPrevTab=null,logPrevKeys=new Set(),logClearTimer=null;
+function logChipColor(code){
+  let c='#3a5a9a';try{c=defaultColorsFor(code)[0]||c;}catch(e){}
+  return c;
+}
+function logChipFg(c){
+  try{return nibRelLum(nibHexToRgb(c)||[0,0,0])>.45?'#1C2C4A':'#fff';}catch(e){return '#fff';}
+}
+function logValueHTML(tab,val){
+  const v=String(val);
+  if(tab==='numero'){
+    const m=v.match(/^(\d+)([A-Za-z]{2})(\d{3})$/);
+    return m?`<span class="lg-d">${m[1]}</span><b class="lg-l">${m[2].toUpperCase()}</b><span class="lg-d">${m[3]}</span>`:`<span class="lg-d">${v}</span>`;
+  }
+  const m=v.match(/^(AO06)(\d{21})$/);
+  return m?`<em class="lg-p">AO06</em> <span class="lg-d">${m[2].replace(/(\d{4})(?=\d)/g,'$1 ')}</span>`:`<span class="lg-d">${v}</span>`;
+}
+function renderSessionLog(stagger){
   const body=document.getElementById('sessionLogBody');const count=document.getElementById('sessionLogCount');if(!body||!count)return;
-  const filtered=sessionLog.filter(e=>activeLogTab==='numero'?!!e.numero:!!e.iban);
-  count.textContent=`· ${filtered.length} registo${filtered.length===1?'':'s'}`;
-  if(filtered.length===0){body.innerHTML='<div class="session-log-empty">Nenhum registo ainda nesta sessão</div>';return;}
+  const tab=activeLogTab;
+  const cN=sessionLog.filter(e=>e.numero).length,cI=sessionLog.filter(e=>e.iban).length;
+  const bN=document.getElementById('logCntNumero'),bI=document.getElementById('logCntIban');
+  if(bN)bN.textContent=cN;if(bI)bI.textContent=cI;
+  const all=sessionLog.filter(e=>tab==='numero'?!!e.numero:!!e.iban);
+  // barra de capacidade (cada separador guarda no máximo SESSION_LOG_MAX)
+  const fill=document.getElementById('logMeterFill'),mt=document.getElementById('logMeterTxt'),meter=document.getElementById('logMeter');
+  if(fill){fill.style.width=Math.min(100,all.length/SESSION_LOG_MAX*100)+'%';}
+  if(mt)mt.textContent=all.length+'/'+SESSION_LOG_MAX;
+  if(meter){meter.classList.toggle('warn',all.length>=SESSION_LOG_MAX*.9&&all.length<SESSION_LOG_MAX);meter.classList.toggle('full',all.length>=SESSION_LOG_MAX);}
+  const term=logSearchTerm.replace(/\s+/g,'').toUpperCase();
+  const list=term?all.filter(e=>String(tab==='numero'?e.numero:e.iban).toUpperCase().includes(term)):all;
+  count.textContent=term?`· ${list.length} de ${all.length}`:`· ${list.length} registo${list.length===1?'':'s'}`;
+  const tabChanged=logPrevTab!==tab||stagger===true;
+  const prev=logPrevKeys;logPrevTab=tab;
+  logPrevKeys=new Set(all.map(e=>(tab==='numero'?e.numero:e.iban)+'|'+e.time));
+  if(!all.length){body.innerHTML=`<div class="session-log-empty lg-empty"><span class="lg-empty-ico">🗂️</span><b>Ainda não há registos</b><small>${tab==='numero'?'Os números de BI':'Os IBANs'} que processares aparecem aqui, com a hora.</small></div>`;return;}
+  if(!list.length){body.innerHTML=`<div class="session-log-empty lg-empty"><span class="lg-empty-ico">🔎</span><b>Nada encontrado</b><small>Nenhum registo tem “${logSearchTerm.replace(/[<>&]/g,'')}”.</small></div>`;return;}
   body.innerHTML='';
-  for(let i=filtered.length-1;i>=0;i--){
-    const entry=filtered[i];const val=activeLogTab==='numero'?entry.numero:entry.iban;
-    const row=document.createElement('div');row.className='session-log-row';
+  let lastHour=null,shown=0;
+  for(let i=list.length-1;i>=0;i--){
+    const entry=list[i];const val=tab==='numero'?entry.numero:entry.iban;
+    const hour=String(entry.time||'').slice(0,2);
+    if(hour&&hour!==lastHour){lastHour=hour;const h=document.createElement('div');h.className='lg-hour';h.innerHTML=`<span>${hour}h</span>`;body.appendChild(h);}
+    const key=val+'|'+entry.time;
+    const row=document.createElement('div');
+    row.className='session-log-row '+(tab==='numero'?'lg-bi':'lg-iban');
     row.title='Clique: copiar · Duplo clique: reabrir';
-    row.innerHTML=`<span class="sl-time">[${entry.time}]</span> · ${val}`;
+    let chip='',sub='',color='#3a5a9a';
+    if(tab==='numero'){
+      const m=String(val).match(/^\d+([A-Za-z]{2})\d{3}$/);chip=m?m[1].toUpperCase():'BI';
+    }else{
+      const code=String(val).slice(4,8);const bank=(typeof BANKS_DATA!=='undefined'&&BANKS_DATA[code])?BANKS_DATA[code].nome:'';
+      chip=bank?(SIGLA_OVERRIDES[code]||extractSigla(bank)):'?';sub=bank?bank.replace(/\s*\([^)]*\)\s*$/,''):'Banco não identificado';color=logChipColor(code);
+    }
+    row.style.setProperty('--rowc',color);row.style.setProperty('--chipfg',logChipFg(color));
+    row.innerHTML=`<span class="lg-chip">${chip}</span>${sub?`<span class="lg-bank">${sub}</span>`:''}<span class="lg-val">${logValueHTML(tab,val)}</span><span class="lg-time">${entry.time||''}</span><button type="button" class="lg-reopen" title="Reabrir" aria-label="Reabrir">↗</button>`;
+    if(i===list.length-1&&!term)row.classList.add('lg-latest');
+    if(tabChanged){if(shown<14){row.classList.add('lg-enter');row.style.setProperty('--i',shown);}}
+    else if(!prev.has(key))row.classList.add('lg-new');
+    shown++;
     row.onclick=function(){cpSessionLogRow(val,this);};
     row.ondblclick=function(){reopenSessionLogEntry(entry);};
+    row.querySelector('.lg-reopen').onclick=function(ev){ev.stopPropagation();reopenSessionLogEntry(entry);};
     body.appendChild(row);
   }
+  if(tabChanged)body.scrollTop=0;
 }
+function onLogSearch(){logSearchTerm=document.getElementById('logSearch').value||'';renderSessionLog();}
 function switchLogTab(tab){
-  activeLogTab=tab;document.getElementById('logTabNumero').classList.toggle('active',tab==='numero');document.getElementById('logTabIban').classList.toggle('active',tab==='iban');renderSessionLog();
+  activeLogTab=tab;document.getElementById('logTabNumero').classList.toggle('active',tab==='numero');document.getElementById('logTabIban').classList.toggle('active',tab==='iban');
+  logSearchTerm='';const si=document.getElementById('logSearch');if(si)si.value='';
+  resetLogClearBtn();renderSessionLog(true);
 }
 function cpSessionLogRow(text,el){
-  navigator.clipboard.writeText(text).then(()=>{el.classList.remove('flash-copied');void el.offsetWidth;el.classList.add('flash-copied');el.addEventListener('animationend',()=>el.classList.remove('flash-copied'),{once:true});}).catch(()=>{});
+  navigator.clipboard.writeText(text).then(()=>{
+    el.classList.remove('flash-copied','copied');void el.offsetWidth;el.classList.add('flash-copied','copied');
+    setTimeout(()=>el.classList.remove('copied'),1150);
+    el.addEventListener('animationend',()=>el.classList.remove('flash-copied'),{once:true});
+  }).catch(()=>{});
 }
+function resetLogClearBtn(){
+  clearTimeout(logClearTimer);const b=document.getElementById('logClearBtn');
+  if(b){b.classList.remove('confirm');b.textContent='Limpar';}
+}
+// 1.º clique pede confirmação (50 registos não se apagam por engano); 2.º clique apaga
 function clearSessionLog(){
+  const b=document.getElementById('logClearBtn');
+  const n=sessionLog.filter(e=>activeLogTab==='numero'?e.numero:e.iban).length;
+  if(!n)return;
+  if(b&&!b.classList.contains('confirm')){
+    b.classList.add('confirm');b.textContent='Apagar '+n+'?';
+    clearTimeout(logClearTimer);logClearTimer=setTimeout(resetLogClearBtn,3000);return;
+  }
+  resetLogClearBtn();
   if(activeLogTab==='numero'){sessionLog.forEach(e=>{if(e.numero){seenDocNumbers.delete(e.numero);e.numero=null;}});}
   else{sessionLog.forEach(e=>{if(e.iban){seenIbans.delete(e.iban);e.iban=null;}});}
-  sessionLog=sessionLog.filter(e=>e.numero||e.iban);renderSessionLog();
+  sessionLog=sessionLog.filter(e=>e.numero||e.iban);renderSessionLog(true);
 }
 function toggleLogPanel(){
   const panel=document.getElementById('logPanel');const fab=document.getElementById('logFab');const overlay=document.getElementById('logOverlay');
   const isOpen=panel.classList.contains('open');
   panel.classList.toggle('open',!isOpen);overlay.classList.toggle('show',!isOpen);fab.classList.toggle('active',!isOpen);
+  if(!isOpen)renderSessionLog(true);else resetLogClearBtn();
 }
 function closeLogPanel(){document.getElementById('logPanel').classList.remove('open');document.getElementById('logOverlay').classList.remove('show');document.getElementById('logFab').classList.remove('active');}
 
@@ -4917,8 +5095,8 @@ function showIbanProblem(att){
     <div class="ib-head"><span class="ib-ico">${NIB_ICON_ERR}</span><div class="ib-txt"><b>${diff===0?`${label} com 21 dígitos, mas o checksum não passa`:(att.hasPrefix?`IBAN com ${len} dígitos a seguir ao AO06`:`NIB com ${len} dígitos`)}</b><small>${diff===0?'Há um número trocado ou errado':ibanCountText(diff)+' — o esperado são 21'}</small></div></div>
     ${bank?`<div class="nib-bankbar" title="${bank}">${bank}</div>`:''}
     <div class="nib-numrow"><div class="nib-plate">${groups}</div></div>
-    ${fixList.length?`<div class="ib-fix"><p>${fixList.length>1?'Estas hipóteses passam no checksum — escolhe a certa:':fix.why+'. Assim o checksum fica válido.'}</p>
-      <div class="ib-fix-btns">${fixList.map((f,k)=>`<button type="button" class="ib-btn go ib-opt" onclick="ibanApplyFix(${k})"><span>${f.why}</span><small>${ibanDiffHTML(d,f.digits)}</small></button>`).join('')}<button type="button" class="ib-btn" onclick="ibanDismissFix()">Ignorar</button></div></div>`
+    ${fixList.length?`<div class="ib-fix"><p>${fixList.length>1?`Há <b>${fixList.total||fixList.length}</b> hipótese${(fixList.total||fixList.length)===1?'':'s'} que passam no checksum, das mais prováveis para as menos. O checksum só diz que o número é possível — confere com o documento.`:fix.why+'. Assim o checksum fica válido.'}</p>
+      <div class="ib-fix-btns">${fixList.map((f,k)=>`<button type="button" class="ib-btn go ib-opt${k>=6?' ib-extra':''}" onclick="ibanApplyFix(${k})"><span>${f.why}</span><small>${ibanDiffHTML(d,f.digits)}</small></button>`).join('')}${fixList.length>6?`<button type="button" class="ib-btn ib-more" onclick="ibanShowMoreFix(this)">Mostrar mais (${fixList.length-6})</button>`:''}<button type="button" class="ib-btn" onclick="ibanDismissFix()">Ignorar</button></div></div>`
     :`<p class="ib-hint">Confere o número no documento e cola outra vez (Ctrl+V).</p>`}
   </div>`;
   document.getElementById('addMoreWrap').classList.remove('show');
@@ -4927,13 +5105,17 @@ function showIbanProblem(att){
 }
 // número em grupos de 4; quando o tamanho é igual, sublinha os números que mudaram
 function ibanDiffHTML(orig,cand){
-  const same=orig.length===cand.length;let h='';
+  const flags=new Array(cand.length).fill(false);
+  if(orig.length===cand.length){for(let i=0;i<cand.length;i++)flags[i]=cand[i]!==orig[i];}
+  else if(cand.length>orig.length){let p=0;for(let i=0;i<cand.length;i++){if(p<orig.length&&cand[i]===orig[p])p++;else flags[i]=true;}}
+  let h='';
   for(let i=0;i<cand.length;i++){
     if(i&&i%4===0)h+=' ';
-    h+=(same&&cand[i]!==orig[i])?'<u class="ib-z">'+cand[i]+'</u>':cand[i];
+    h+=flags[i]?'<u class="ib-z">'+cand[i]+'</u>':cand[i];
   }
   return h;
 }
+function ibanShowMoreFix(btn){btn.parentNode.classList.add('open');btn.remove();}
 function ibanApplyFix(k){
   if(!ibanFixCandidate)return;
   const f=ibanFixCandidate.list[k||0];if(!f)return;

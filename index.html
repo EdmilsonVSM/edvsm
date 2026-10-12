@@ -1915,6 +1915,10 @@ body.dark .dc-auto{background:#0f1a30;color:#B9FF66;border-color:#B9FF66}
   </div>
   <div class="settings-panel-body">
     <div class="settings-toggle">
+      <span>Verificação automática</span>
+      <label class="switch"><input type="checkbox" id="autoVerifyToggle" checked onchange="onToggleAutoVerify()"><span class="slider"></span></label>
+    </div>
+    <div class="settings-toggle">
       <span>Perfil visual do cliente</span>
       <label class="switch"><input type="checkbox" id="toggle_perfil" onchange="onToggleFeature('perfil')"><span class="slider"></span></label>
     </div>
@@ -3928,7 +3932,7 @@ function editOriginalText(){
   rawEl.style.display='';rawEl.value=lastRawText;
   document.getElementById('btnPasteAction').style.display='none';
   document.getElementById('btnExtractAction').style.display='none';
-  document.getElementById('btnVerificar').style.display='none';
+  updateVerifyBtn();
   document.getElementById('editOriginalActions').style.display='flex';
   updateLivePreview();rawEl.focus();
 }
@@ -4145,7 +4149,7 @@ function updateActionButtonsForMode(){
   const display=seqMode?'none':'';
   if(pasteBtn)pasteBtn.style.display='none';
   if(extractBtn)extractBtn.style.display='none';
-  if(verificarBtn)verificarBtn.style.display=seqMode?'none':'';
+  updateVerifyBtn();
   if(adicionarBtn)adicionarBtn.style.display=seqMode?'none':'';
   if(seqBtn)seqBtn.style.display=seqMode?'none':'';
 }
@@ -4234,16 +4238,45 @@ document.addEventListener('keydown',e=>{
   if(matchesAdvanceKey(e)&&!seqMode&&isNibView){e.preventDefault();const row=document.querySelector('#body .row');if(row)row.click();return;}
   if((e.key==='a'||e.key==='A')&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!matchesAdvanceKey(e)&&document.getElementById('addMoreWrap').classList.contains('show')&&!document.getElementById('addMoreForm').classList.contains('show')){e.preventDefault();openAddMore();return;}
 });
+// ══════════════════════════════════════════════════════════
+// VERIFICAÇÃO AUTOMÁTICA (ligada por defeito)
+// ligada: ao colar, verifica logo · desligada: o texto fica na área de colagem até carregar em "Verificar"
+// ══════════════════════════════════════════════════════════
+const LS_AUTOVERIFY='edvsm_autoverify';
+function autoVerifyOn(){const t=document.getElementById('autoVerifyToggle');return !t||t.checked;}
+function onToggleAutoVerify(){lsSet(LS_AUTOVERIFY,autoVerifyOn()?'1':'0');updateVerifyBtn();}
+// o botão Verificar só existe com a verificação automática desligada, e só enquanto a área de colagem está à vista
+function updateVerifyBtn(){
+  const b=document.getElementById('btnVerificar'),raw=document.getElementById('raw');if(!b||!raw)return;
+  b.style.display=(!autoVerifyOn()&&!editingOriginal&&raw.offsetParent!==null)?'':'none';
+}
+function handlePastedText(text){
+  const rawEl=document.getElementById('raw');
+  if(autoVerifyOn()){rawEl.value=text;updateLivePreview();processAll();return;}
+  // desligada: um documento novo com resultados no ecrã começa do zero e o texto espera na área de colagem
+  const busy=!editingOriginal&&(document.getElementById('card').classList.contains('show')||dateCalcOpen||specialCollapsed||Object.keys(result).length>0);
+  if(busy)clearAll();
+  rawEl.style.display='';rawEl.value=text;updateLivePreview();updateVerifyBtn();
+}
+// com a automática ligada não há botão: Enter na área de colagem verifica o que foi escrito à mão (Shift+Enter = nova linha)
+document.getElementById('raw').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&autoVerifyOn()&&!editingOriginal){e.preventDefault();processAll();}
+});
+(function(){
+  const ids=['pasteCard','pasteSection','raw','pasteCollapsedBar'];
+  const mo=new MutationObserver(()=>updateVerifyBtn());
+  ids.forEach(id=>{const el=document.getElementById(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['style','class']});});
+})();
 document.addEventListener('paste',e=>{
   const active=document.activeElement;
   if(active&&(active.id==='notesField'||active.id==='addMoreTextarea'||(active.classList&&active.classList.contains('lp-seg'))))return;
   e.preventDefault();
   const text=e.clipboardData.getData('text');if(!text.trim())return;
-  document.getElementById('raw').value=text;updateLivePreview();processAll();
+  handlePastedText(text);
 });
 function pasteFromClipboard(){
   if(!navigator.clipboard||!navigator.clipboard.readText){alert('O navegador não permite colar por botão aqui. Usa Ctrl+V.');return;}
-  navigator.clipboard.readText().then(text=>{if(!text||!text.trim())return;document.getElementById('raw').value=text;updateLivePreview();processAll();}).catch(()=>{alert('Não foi possível aceder à área de transferência. Usa Ctrl+V para colar.');});
+  navigator.clipboard.readText().then(text=>{if(!text||!text.trim())return;handlePastedText(text);}).catch(()=>{alert('Não foi possível aceder à área de transferência. Usa Ctrl+V para colar.');});
 }
 
 // ══════════════════════════════════════════════════════════
@@ -4317,7 +4350,7 @@ function clearAll(){
   resetDocTabs();
   // Garante que "Como funciona" reaparece
   document.getElementById('howItWorks').style.display='';
-  document.getElementById('btnVerificar').style.display='';
+  updateVerifyBtn();
   document.getElementById('btnAdicionarMais').style.display='none';
   document.getElementById('btnModoSequencial').style.display='none';
 }
@@ -5273,11 +5306,12 @@ function initNewSettings(){
   autoAdvOn=lsGet(LS_AA_ON,'0')==='1';document.getElementById('autoAdvToggle').checked=autoAdvOn;
   document.getElementById('dateCalcToggle').checked=lsGet(LS_DC_ON,'0')==='1';
   document.getElementById('ibanFixToggle').checked=lsGet('edvsm_iban_autofix','1')==='1';
+  document.getElementById('autoVerifyToggle').checked=lsGet(LS_AUTOVERIFY,'1')!=='0';
   dcRule=lsGet(LS_DC_RULE,'m1')==='same'?'same':'m1';
   {const m=lsGet(LS_DC_MODE,'auto');dcMode=(m==='em'||m==='ex')?m:'auto';}
   dcRule='m1';
   dcYrs=parseInt(lsGet(LS_DC_YRS,'5'),10)===10?10:5;
-  setDcModeUI();updateSeqHintKeyDisplay();
+  setDcModeUI();updateSeqHintKeyDisplay();updateVerifyBtn();
 }
 
 // ══════════════════════════════════════════════════════════

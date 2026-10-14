@@ -2753,6 +2753,7 @@ function ibanSwapBases(d,maxSw){
   }
   return bases;
 }
+const IBAN_LOOK=(()=>{const pairs=['06','08','09','17','27','38','49','56','58','35','68','89'],m={};pairs.forEach(p=>{(m[p[0]]=m[p[0]]||'')+0;m[p[0]]+=p[1];m[p[1]]=(m[p[1]]||'')+p[0];});return m;})();
 function ibanCandidates(d,reorder){
   d=String(d||'');
   const mkey=d+(reorder?'|r':'');
@@ -2796,6 +2797,13 @@ function ibanCandidates(d,reorder){
       for(let i=0;i<21;i++){const r=d.slice(0,i)+d.slice(i+1);for(let j=0;j<=20;j++){if(j===i||j===i+1)continue;add(r.slice(0,j)+d[i]+r.slice(j),'Mudei 1 número de lugar ('+(i+1)+'→'+(j+1)+')',8,['move']);}}
     }else{
       for(let i=0;i<21;i++)for(let g=0;g<10;g++){if(String(g)!==d[i])add(d.slice(0,i)+g+d.slice(i+1),'Substituí 1 número (posição '+(i+1)+')',5,['sub']);}
+      // 2 dígitos errados, mas só por outros que o OCR costuma confundir (3↔8, 0↔6/8/9, 1↔7, 5↔6...)
+      for(let i=0;i<21;i++)for(let j=i+1;j<21;j++){
+        for(const a of (IBAN_LOOK[d[i]]||''))for(const b of (IBAN_LOOK[d[j]]||'')){
+          const t=d.slice(0,i)+a+d.slice(i+1,j)+b+d.slice(j+1);
+          add(t,'Números parecidos: '+d[i]+'→'+a+' (pos. '+(i+1)+') e '+d[j]+'→'+b+' (pos. '+(j+1)+')',6,['ocr']);
+        }
+      }
     }
   }
   out.sort((x,y)=>(y.bankOk-x.bankOk)||(x.sw-y.sw)||(y.keep-x.keep)||(x.rank-y.rank)||(x.digits<y.digits?-1:x.digits>y.digits?1:0));   // dentro do mesmo grupo: ordem crescente
@@ -3614,7 +3622,8 @@ function processAll(){
   if(ibanTry&&ibanAutoEnabled()&&!skipFix&&(ibanTry.digits.length!==21||csBad)){
     ibanFl=ibanFixList(ibanTry.digits);
   }
-  if(ibanTry&&(ibanTry.digits.length!==21||(csBad&&ibanFl.length>1&&!skipFix))){ibanBadRaw=rawInput;showIbanProblem(ibanTry);return;}
+  const csHasFix=csBad&&!skipFix&&(ibanFl.length>=1||(ibanAutoEnabled()&&ibanFixExtra(ibanTry.digits).length>0));   // 1 hipótese chega para abrir o painel
+  if(ibanTry&&(ibanTry.digits.length!==21||csHasFix)){ibanBadRaw=rawInput;showIbanProblem(ibanTry);return;}
   let rawN=raw;
   if(ibanTry&&ibanTry.digits.length===21)rawN=(ibanTry.hasPrefix?'AO06':'')+ibanTry.digits;
   const inputType=detectInputType(rawN);
@@ -5401,7 +5410,7 @@ function ibanDiffHTML(orig,cand){
 }
 // ── seletor de hipóteses do IBAN ──
 let ibanFixIdx=0,ibvTouchX=0;
-const IBAN_KIND={tail:['#0f9aa8','no fim'],dup:['#2fa36b','repetidos'],zero:['#3b7bd9','zeros'],any:['#8a5cd0','número novo'],swap:['#e8890c','ordem trocada'],del:['#d9534f','a menos'],sub:['#e8890c','substituído'],move:['#c2569b','mudou de lugar']};
+const IBAN_KIND={ocr:['#7a5cd0','parecidos'],tail:['#0f9aa8','no fim'],dup:['#2fa36b','repetidos'],zero:['#3b7bd9','zeros'],any:['#8a5cd0','número novo'],swap:['#e8890c','ordem trocada'],del:['#d9534f','a menos'],sub:['#e8890c','substituído'],move:['#c2569b','mudou de lugar']};
 function ibanKindColor(f){const k=(f.tags&&f.tags[f.tags.length-1])||'zero';return (IBAN_KIND[k]||IBAN_KIND.zero)[0];}
 // Variante a variante, à mão: primeiro as que mantêm a ordem; só depois (ao chegar ao fim) as que trocam a ordem
 function ibvTip(msg){
@@ -5432,7 +5441,8 @@ function ibanFixGo(delta){
     if(n<2){ibvTip('Só encontrei esta variante');return;}
     ibanFixIdx=0;ibanFixRebuild(0,1);ibvTip('Já viste todas as variantes — voltei à primeira');return;
   }
-  const wrapBack=(delta<0&&ibanFixIdx<=0&&n>1);
+  if(delta<0&&ibanFixIdx<=0){ibvTip('Estás na primeira variante');return;}
+  const wrapBack=false;
   const prevRo=!!(c.list[ibanFixIdx]&&c.list[ibanFixIdx].reorder);
   ibanFixIdx=(ibanFixIdx+delta+n)%n;
   ibanFixRender(delta);

@@ -49,6 +49,7 @@
 -->
 <html lang="pt">
 <head>
+<meta name="edvsm-pc" content="1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EdVSM Filter</title>
@@ -1584,6 +1585,23 @@ body.dark .dc-auto{background:#0f1a30;color:#B9FF66;border-color:#B9FF66}
 .dc-from{flex-wrap:wrap;justify-content:center;row-gap:.5rem}
 .dc-from b{white-space:nowrap}
 </style>
+<style>
+/* IBAN → telemóvel */
+body.pm-off .pm-pill,body.pm-off #pmHdr,body.pm-off #pmSub{display:none!important}
+.iban-pill.pill-locked,.iban-pill.pill-locked:hover,.iban-pill.pill-locked:active{background:#c9ced6!important;color:#6b7280!important;border-color:#8a93a3!important;opacity:.6;filter:grayscale(1);transform:none!important;box-shadow:none!important;cursor:not-allowed}
+.pm-hdr{display:inline-flex;align-items:center;gap:.35rem;font:700 .58rem 'DM Mono',monospace;color:#e8f3df;padding:.3rem .7rem;border-radius:20px;border:1.5px solid rgba(185,255,102,.55);background:rgba(185,255,102,.12);white-space:nowrap}
+.pm-hdr i{width:6px;height:6px;border-radius:50%;background:#B9FF66;box-shadow:0 0 0 0 rgba(185,255,102,.6);animation:pm-hdr-pulse 1.8s infinite}
+@keyframes pm-hdr-pulse{70%{box-shadow:0 0 0 6px rgba(185,255,102,0)}100%{box-shadow:0 0 0 0 rgba(185,255,102,0)}}
+.pm-state{display:inline-flex;align-items:center;gap:.4rem;border:2px solid #1C2C4A;border-radius:20px;padding:.15rem .65rem;font:700 .72rem 'DM Sans',sans-serif;background:var(--pale);color:#1C2C4A;white-space:nowrap}
+.pm-state i{width:8px;height:8px;border-radius:50%;background:#9aa79e}.pm-state.on i{background:#2f6b1f}.pm-state.off i{background:#c81f1f}
+body.dark .pm-state,.settings-toggle .pm-state{background:#1d2c4d;color:#e8f3df;border-color:rgba(185,255,102,.45)}
+body.dark .pm-state.on i,.settings-toggle .pm-state.on i{background:#B9FF66}
+.iban-pill .pill-lbl.pm-wait{animation:pm-spin 1s linear infinite;display:inline-block}
+@keyframes pm-spin{to{transform:rotate(360deg)}}
+.pm-toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);max-width:min(92vw,460px);z-index:99999;background:#fff;color:#1C2C4A;border:3px solid #1C2C4A;border-radius:14px;box-shadow:4px 4px 0 #1C2C4A;padding:.65rem 1rem;font:800 .85rem 'DM Sans',sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.pm-toast.show{opacity:1;transform:translate(-50%,0)}
+.pm-toast.ok{background:#B9FF66}.pm-toast.warn{background:#fff6d6}.pm-toast.bad{background:#ffe5e5;color:#7d1010;border-color:#c81f1f;box-shadow:4px 4px 0 #c81f1f}
+</style>
 </head>
 <body>
 
@@ -1671,6 +1689,7 @@ body.dark .dc-auto{background:#0f1a30;color:#B9FF66;border-color:#B9FF66}
     <div class="badge-row">
       <span class="badge">👑 KwanzaBet</span>
       <span class="counter" id="sessionCounter">0 verificações</span>
+      <span class="pm-hdr" id="pmHdr" style="display:none" title="Telemóvel ligado em tempo real"><i></i><span>📱 Ligado</span></span>
       <button class="dark-btn" id="darkBtn" onclick="toggleDark()" title="Modo escuro">🌙</button>
       <button class="dark-btn" id="headerSettingsBtn" onclick="toggleSettingsMenu()" title="Configurações">⚙️</button>
     </div>
@@ -1974,6 +1993,28 @@ body.dark .dc-auto{background:#0f1a30;color:#B9FF66;border-color:#B9FF66}
       <span>Ordem dos campos</span>
       <button type="button" class="ord-open-btn" id="ordOpenBtn" onclick="openOrderView()"><span class="ord-dot"></span><span class="ord-ico">⇅</span>Alterar</button>
     </div>
+    <div class="set-group">
+      <div class="settings-toggle">
+        <span>Enviar IBANs para o telemóvel</span>
+        <label class="switch"><input type="checkbox" id="pmToggle" onchange="onTogglePm()"><span class="slider"></span></label>
+      </div>
+      <div id="pmSub">
+        <div class="settings-toggle">
+          <span>Estado</span>
+          <span class="pm-state" id="pmState"><i></i><span>Sem telemóvel ligado</span></span>
+        </div>
+        <div class="settings-toggle">
+          <span>Aviso de teste no telemóvel</span>
+          <button type="button" class="ord-open-btn" id="pmTest"><span>📱</span>Enviar teste</button>
+        </div>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="settings-toggle">
+        <span>Travar botões depois de usar<small style="display:block;font-weight:400;opacity:.65;font-size:.68rem">Clique direito volta a copiar</small></span>
+        <label class="switch"><input type="checkbox" id="pillLockToggle" onchange="onTogglePillLock()"><span class="slider"></span></label>
+      </div>
+    </div>
   </div>
   <div class="settings-panel-footer">
     <svg viewBox="0 0 340 12" preserveAspectRatio="none" aria-hidden="true">
@@ -2006,7 +2047,7 @@ body.dark .dc-auto{background:#0f1a30;color:#B9FF66;border-color:#B9FF66}
 // ══════════════════════════════════════════════════════════
 // SISTEMA DE LICENÇA
 // ══════════════════════════════════════════════════════════
-const LICENSE_API_URL='https://script.google.com/macros/s/AKfycbyKPEDZi-Mp73Efu2PFIsmt5gBEtdBn_vfj4-1cckOdm091vlesHGWQQkGqhGfg3jcg/exec';
+const LICENSE_API_URL='/api/license';
 const LICENSE_STORAGE_KEY='edvsm_license';
 const LICENSE_TS_KEY='edvsm_license_ts';
 const LICENSE_RECHECK_MS=10*60*1000; // recheck a cada 10min — verificação silenciosa em segundo plano, sem mostrar nada enquanto a chave for válida
@@ -3062,7 +3103,7 @@ function copySeqDateSuggestion(which){
 // BANCOS
 // ══════════════════════════════════════════════════════════
 const BANKS_DATA={
-  '0001':{nome:'Banco do Brasil Angola',kw:'Brasil',swift:''},
+  '0001':{nome:'Banco do Brasil Angola',kw:'BANCO DO BRASIL S.A.',swift:''},
   '0004':{nome:'Banco Caixa Geral Angola (BCGA)',kw:'Banco Caixa Geral Angola, SA',swift:''},
   '0005':{nome:'Banco de Comércio e Indústria (BCI)',kw:'Banco de Comercio e Industria',swift:''},
   '0006':{nome:'Banco de Fomento Angola (BFA)',kw:'Banco de Fomento de Angola, SA',swift:''},
@@ -3070,9 +3111,9 @@ const BANKS_DATA={
   '0040':{nome:'Banco Angolano de Investimentos (BAI)',kw:'Banco Angolano de Investimento, SA',swift:''},
   '0043':{nome:'Banco Comercial Angolano (BCA)',kw:'Banco Comercial Angolano',swift:''},
   '0044':{nome:'Banco Sol (BSOL)',kw:'Banco Sol, SARL',swift:''},
-  '0045':{nome:'Banco Económico (BE)',kw:'Econ',swift:''},
-  '0047':{nome:'Banco Keve',kw:'Keve',swift:''},
-  '0048':{nome:'BAI Microfinanças (BMF)',kw:'Microfin',swift:''},
+  '0045':{nome:'Banco Económico (BE)',kw:'Banco Econômico',swift:''},
+  '0047':{nome:'Banco Keve',kw:'BANCO KEVE, S.A.',swift:''},
+  '0048':{nome:'BAI Microfinanças (BMF)',kw:'BANCO BAI MICRO FINANÇAS',swift:''},
   '0051':{nome:'Banco BIC',kw:'Banco Internacional de Credito',swift:''},
   '0052':{nome:'Banco de Negócios Internacional (BNI)',kw:'Banco de Negócios Internacionail, SA',swift:''},
   '0053':{nome:'BANC',kw:'BANC',swift:''},
@@ -3080,18 +3121,18 @@ const BANKS_DATA={
   '0055':{nome:'Banco Millennium Atlântico',kw:'BPA-Banco Privado Atlantico',swift:''},
   '0056':{nome:'VTB África',kw:'VTB',swift:''},
   '0057':{nome:'BKI',kw:'BKI',swift:''},
-  '0058':{nome:'First National Bank Angola (FNB)',kw:'Fini',swift:''},
-  '0059':{nome:'Banco Comercial do Huambo (BCH)',kw:'Huambo',swift:''},
-  '0060':{nome:'Standard Bank Angola (SBA)',kw:'Standard Bank',swift:''},
+  '0058':{nome:'First National Bank Angola (FNB)',kw:'FINIBANCO ANGOLA, S.A.',swift:''},
+  '0059':{nome:'Banco Comercial do Huambo (BCH)',kw:'Banco Comercial do Huambo',swift:''},
+  '0060':{nome:'Standard Bank Angola (SBA)',kw:'STANDARD BANK DE ANGOLA, S.A.',swift:''},
   '0061':{nome:'Banco Privado Atlântico (BPA)',kw:'ATL',swift:''},
   '0062':{nome:'BVB',kw:'BVB',swift:''},
   '0063':{nome:'Standard Chartered Bank Angola (SCBA)',kw:'Chartered',swift:''},
   '0064':{nome:'BPG',kw:'BPG',swift:''},
   '0065':{nome:'Banco MAIS (BMAIS)',kw:'BMAIS',swift:''},
-  '0066':{nome:'Banco Yetu',kw:'YETU',swift:''},
-  '0067':{nome:'Banco de Investimento Rural (BIR)',kw:'Rural',swift:''},
+  '0066':{nome:'Banco Yetu',kw:'BANCO YETU, S.A.',swift:''},
+  '0067':{nome:'Banco de Investimento Rural (BIR)',kw:'Banco de Investimento Rural, SA',swift:''},
   '0069':{nome:'BPT',kw:'BPT',swift:''},
-  '0070':{nome:'Banco de Crédito do Sul (BCS)',kw:'Sul',swift:''},
+  '0070':{nome:'Banco de Crédito do Sul (BCS)',kw:'Banco de Credito do Sul, SA',swift:''},
   '0071':{nome:'BOCLB',kw:'BOCLB',swift:''},
 };
 const BANK_COLORS={
@@ -3381,8 +3422,9 @@ function bankCustomSave(code){
   const efeito=panel.dataset.effect||defaultEffectFor(code);
   const scope=panel.dataset.scope||'bank';
   saveCustomBankConfig(scope,code,cores,efeito);refreshAllBankVisuals();closeBankCustomPanel(code);
+  try{if(window.edvsmEnviarAspeto)window.edvsmEnviarAspeto(code,scope);}catch(err){}
 }
-function bankCustomResetDefault(code){resetCustomBankConfig(code);refreshAllBankVisuals();closeBankCustomPanel(code);}
+function bankCustomResetDefault(code){resetCustomBankConfig(code);refreshAllBankVisuals();closeBankCustomPanel(code);try{if(window.edvsmEnviarAspeto)window.edvsmEnviarAspeto(code,'bank');}catch(err){}}
 
 function stripAccents(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function extractSigla(nome){
@@ -3572,6 +3614,7 @@ function showNibInCard(nib,fullIban,payName){
   if(fullIban)pills.push({lbl:'💳',val:'AO06'+nib,type:'iban'});
   if(payName)pills.push({lbl:'👤',val:payName,type:'nome',title:'Copiar o nome: '+payName});
   if(bankData?.kw)pills.push({lbl:'🔍',val:bankData.kw,display:siglaText||bankData.kw,type:'pesquisa'});
+  pills.push({lbl:'📱',val:'AO06'+nib,type:'telemovel',title:'Enviar para o telemóvel'});
   if(pills.length){
     const pillWrap=document.createElement('div');
     pillWrap.style.cssText='display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-top:.3rem;';
@@ -3579,7 +3622,7 @@ function showNibInCard(nib,fullIban,payName){
       const pill=document.createElement('span');pill.className='iban-pill';
       pill.innerHTML=`<span class="pill-lbl">${p.lbl}</span><span class="pill-val">${p.display||p.val}</span>`;
       if(p.title)pill.title=p.title;
-      pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')settleSiglaBubble('nibSiglaBubble');};
+      wirePill(pill,p,'nibSiglaBubble');
       pillWrap.appendChild(pill);
     });
     body.appendChild(pillWrap);
@@ -3594,6 +3637,85 @@ function showNibInCard(nib,fullIban,payName){
 // ══════════════════════════════════════════════════════════
 // PROCESSO PRINCIPAL
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// CONTAGEM DE VERIFICAÇÕES — só conta verificação LIMPA
+//  • NIB/IBAN: 21 dígitos e checksum válido
+//  • frente do BI: nº do documento detetado
+//  • verso: faltar no máximo 1 dos 5 campos · frente+verso: faltar no máximo 1 dos 7
+//  • só nome: nome reconhecido
+//  • o mesmo conteúdo dentro de 60 s conta uma vez (editar, reprocessar, colar duas vezes)
+// O programa continua a mostrar tudo o que encontrou; só não soma quando não está limpo.
+// ══════════════════════════════════════════════════════════
+const VERIF_JANELA_MS=60000;
+const verifRecentes=new Map();
+const verifRepVisto=new Map();
+function verifL4(s){const d=String(s||'').replace(/\D/g,'');return d.length>=4?d.slice(-4):'';}  // só os últimos 4 dígitos vão para o painel
+function verifAvisar(tipo,l4,doc){try{window.edvsmPainelEvento(tipo,l4||'',doc);}catch(e){}}
+function verifSomar(tipo,chave,l4,doc){
+  const agora=Date.now();
+  verifRecentes.forEach((t,k)=>{if(agora-t>VERIF_JANELA_MS)verifRecentes.delete(k);});
+  verifRepVisto.forEach((t,k)=>{if(agora-t>VERIF_JANELA_MS)verifRepVisto.delete(k);});
+  if(verifRecentes.has(chave)){                      // o mesmo conteúdo há menos de 60 s
+    if(!verifRepVisto.has(chave)){verifRepVisto.set(chave,agora);verifAvisar('rep',l4);}
+    return false;
+  }
+  verifRecentes.set(chave,agora);
+  sessionCount++;
+  persistContadorTexto();
+  try{window.dispatchEvent(new CustomEvent('edvsm:verif',{detail:{tipo:tipo}}));}catch(e){}
+  verifAvisar(tipo,l4,doc);                          // o servidor conta (só o primeiro colega) e devolve o total do turno
+  return true;
+}
+function verifContarNib(digits){
+  if(!digits||!/^\d{21}$/.test(digits))return false;
+  if(!ibanOkFast(digits)){                           // NIB com 21 dígitos mas checksum errado: não conta, o painel regista à parte
+    const ck='i:'+digits;
+    if(!verifRepVisto.has(ck)){verifRepVisto.set(ck,Date.now());verifAvisar('inv',verifL4(digits));}
+    return false;
+  }
+  return verifSomar('nib','n:'+digits,verifL4(digits),{a:'N:'+digits});
+}
+// Texto que não é um nome de verdade: só palavras do dia a dia ("bom dia", "teste"), teclado esmagado ("asdf") ou letras repetidas ("aaaa")
+const NOME_LIXO=new Set(['ISTO','ISSO','TESTE','TESTES','OLA','OBRIGADO','OBRIGADA','BOM','BOA','DIA','TARDE','NOITE','FAVOR','COMPROVATIVO','AQUI','NADA','SIM','NAO','OK','TUDO','BEM','COMO','QUAL','PARA','COM','SEM','MAS','ENVIAR','ENVIO','ENVIEI','FOTO','IMAGEM','DOCUMENTO','CLIENTE','NOME','SENHOR','SENHORA','LIXO','ABC','XXX','SOS']);
+const TECLADO=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM','AZERTYUIOP'];
+function verifNomeLixo(completo){
+  const ps=String(completo||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(Boolean);
+  if(!ps.length)return true;
+  if(ps.every(w=>NOME_LIXO.has(w)))return true;                          // só palavras comuns
+  return ps.some(w=>{
+    if(/([A-Z])\1{3,}/.test(w))return true;                              // 4 letras iguais seguidas
+    if(w.length>=5&&new Set(w).size<=2)return true;                       // só 1 ou 2 letras diferentes
+    for(let i=0;i+4<=w.length;i++){const t=w.slice(i,i+4),r=t.split('').reverse().join('');if(TECLADO.some(l=>l.includes(t)||l.includes(r)))return true;}  // 4 teclas seguidas
+    return false;
+  });
+}
+function verifContarDoc(){
+  const r=result||{},vit=!!isVitalicio;
+  const verso=['residencia','provincia','nascimento','emissao','expiracao'];
+  const tem=(k)=>!!r[k]||(k==='expiracao'&&vit);       // BI vitalício não tem data de expiração
+  const norm=(s)=>String(s||'').toUpperCase().replace(/\s+/g,' ').trim();
+  const camposVerso=()=>verso.map(k=>r[k]||'').join('|');
+  const numDoc=()=>String(r.numero||'').toUpperCase().replace(/[^0-9A-Z]/g,'');   // identidade do documento (o servidor só guarda um código irreversível)
+  const docVerso=()=>verso.map(k=>norm(r[k]||(k==='expiracao'&&vit?'VITALICIO':'')));
+  if(currentMode==='frente'){
+    if(!r.numero)return false;
+    return verifSomar('bi','f:'+r.numero,verifL4(r.numero),{a:'D:'+numDoc()});
+  }
+  if(currentMode==='verso'){
+    if(verso.filter(k=>!tem(k)).length>1)return false;
+    return verifSomar('bi','v:'+camposVerso(),'',{v:docVerso()});
+  }
+  if(currentMode==='ambos'){
+    if(['completo','numero'].concat(verso).filter(k=>!tem(k)).length>1)return false;
+    return verifSomar('bi','a:'+(r.numero||'')+'|'+norm(r.completo)+'|'+camposVerso(),verifL4(r.numero),r.numero?{a:'D:'+numDoc(),v:docVerso()}:{v:docVerso()});
+  }
+  if(currentMode==='nome'){
+    if(!r.completo||verifNomeLixo(r.completo))return false;
+    return verifSomar('nome','o:'+norm(r.completo));
+  }
+  return false;
+}
+
 function processAll(){
   const rawInput=cleanRawText(document.getElementById('raw').value);
   if(!rawInput.trim())return;
@@ -3638,8 +3760,7 @@ function processAll(){
       const fixed=fixIbanPrefix(clean);
       if(fixed){const digits=fixed.slice(4).replace(/O/g,'0');if(/^\d{21}$/.test(digits)){nibCardArg=digits;ibanCardArg='AO06'+digits;}else{nibCardArg=digits;ibanCardArg=null;}nibForSummary=digits;}
     }
-    sessionCount++;
-    document.getElementById('sessionCounter').textContent=`${sessionCount} verificaç${sessionCount===1?'ão':'ões'}`;
+    verifContarNib(nibForSummary);   // só soma com 21 dígitos e checksum válido
     if(nibForSummary)lastKnownIban='AO06'+nibForSummary;
     lastPayName=payNameNow;
     if(ibanTry&&ibanTry.dropped>0&&!ibanNoteNow)ibanNoteNow='Ignorei '+ibanTry.dropped+(ibanTry.dropped===1?' carácter':' caracteres')+' que não eram números';
@@ -3739,8 +3860,7 @@ function processAll(){
 
   checkMissingFieldsBubble();
 
-  sessionCount++;
-  document.getElementById('sessionCounter').textContent=`${sessionCount} verificaç${sessionCount===1?'ão':'ões'}`;
+  verifContarDoc();   // só soma se a leitura estiver limpa (ver regras acima)
 
   seqIdx=0;buildSeqFields();
   pushToSessionHistory();
@@ -4301,6 +4421,29 @@ function cpRow(val,el,key){
     el.classList.remove('flash-copied');void el.offsetWidth;el.classList.add('flash-copied');checkExpiredCompletion(key);
     el.addEventListener('animationend',()=>el.classList.remove('flash-copied'),{once:true});
   });
+}
+// Travar botões depois de usar (opção nas definições, desligada por defeito): o botão fica cinzento e só volta a copiar com o clique direito
+let pillLockOn=false;
+function wirePill(pill,p,bubbleId){
+  if(p.type==='telemovel')pill.classList.add('pm-pill');
+  function run(){
+    if(p.type==='telemovel'){edvsmEnviarTel(p.val,pill);return;}
+    cpPill(p.val,pill);
+    if(p.type==='pesquisa')settleSiglaBubble(bubbleId);
+  }
+  pill.onclick=function(){
+    if(pillLockOn&&pill.classList.contains('pill-locked'))return;
+    run();
+    if(pillLockOn){pill.classList.add('pill-locked');pill.dataset.t0=pill.title||'';pill.title='Já usado · clique direito para copiar de novo';}
+  };
+  pill.oncontextmenu=function(e){
+    if(!pillLockOn||!pill.classList.contains('pill-locked'))return;
+    e.preventDefault();run();
+  };
+}
+function onTogglePillLock(){
+  pillLockOn=document.getElementById('pillLockToggle').checked;lsSet('edvsm_pilllock',pillLockOn?'1':'0');
+  if(!pillLockOn)document.querySelectorAll('.iban-pill.pill-locked').forEach(el=>{el.classList.remove('pill-locked');el.title=el.dataset.t0||'';});
 }
 function cpPill(val,el){
   navigator.clipboard.writeText(val).then(()=>{
@@ -4892,12 +5035,14 @@ function renderAddedNibs(){
     if(siglaHTML&&addedColor)initSiglaBubble(bubbleId,addedColor,addedCode);
     const pills=[{lbl:'NIB',val:nib}];
     if(bankData?.kw)pills.push({lbl:'🔍',val:bankData.kw,display:siglaText||bankData.kw,type:'pesquisa'});
+    pills.push({lbl:'📱',val:'AO06'+nib,type:'telemovel',title:'Enviar para o telemóvel'});
     if(pills.length){
       const pillWrap=document.createElement('div');pillWrap.style.cssText='display:flex;flex-wrap:wrap;justify-content:center;gap:.6rem;margin-top:.3rem;';
       pills.forEach(p=>{
         const pill=document.createElement('span');pill.className='iban-pill';
         pill.innerHTML=`<span class="pill-lbl">${p.lbl}</span><span class="pill-val">${p.display||p.val}</span>`;
-        pill.onclick=function(){cpPill(p.val,this);if(p.type==='pesquisa')settleSiglaBubble(bubbleId);};
+        if(p.title)pill.title=p.title;
+        wirePill(pill,p,bubbleId);
         pillWrap.appendChild(pill);
       });
       body.appendChild(pillWrap);
@@ -5313,6 +5458,7 @@ function initNewSettings(){
   const secs=parseInt(lsGet(LS_TIMER_SECS,'12'),10);
   document.getElementById('autoHideSeconds').value=isNaN(secs)?12:Math.min(30,Math.max(1,secs));
   autoAdvOn=lsGet(LS_AA_ON,'0')==='1';document.getElementById('autoAdvToggle').checked=autoAdvOn;
+  pillLockOn=lsGet('edvsm_pilllock','0')==='1';document.getElementById('pillLockToggle').checked=pillLockOn;
   document.getElementById('dateCalcToggle').checked=lsGet(LS_DC_ON,'0')==='1';
   document.getElementById('ibanFixToggle').checked=lsGet('edvsm_iban_autofix','1')==='1';
   document.getElementById('autoVerifyToggle').checked=lsGet(LS_AUTOVERIFY,'1')!=='0';
@@ -5678,6 +5824,175 @@ window.addEventListener('storage',ev=>{
 });
 persistRestaurar();
 
+</script>
+<script>
+// IBAN → telemóvel: o botão 📱 da bolha do banco envia o IBAN para o telemóvel ligado com a mesma chave.
+(function(){
+  var st=document.getElementById('pmState'),tst=document.getElementById('pmTest');
+  var tg=document.getElementById('pmToggle'),pmOn=false,lastN=0;
+  try{pmOn=localStorage.getItem('edvsm_pm')==='1';}catch(e){}
+  function pmAplicar(){document.body.classList.toggle('pm-off',!pmOn);if(tg)tg.checked=pmOn;}
+  window.onTogglePm=function(){pmOn=!!(tg&&tg.checked);try{localStorage.setItem('edvsm_pm',pmOn?'1':'0');}catch(e){}pmAplicar();estado(lastN,false);};
+  pmAplicar();
+  var toast=document.createElement('div');toast.className='pm-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.appendChild(toast);
+  var tt=null;
+  function aviso(t,c){toast.textContent=t;toast.className='pm-toast show '+(c||'');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('show');},c==='bad'||c==='warn'?4200:2200);}
+  function estado(n,off){
+    if(off)n=0;
+    // um telemóvel acabou de se ligar e a função estava desligada: liga sozinha
+    if(n>0&&lastN===0&&!pmOn){pmOn=true;try{localStorage.setItem('edvsm_pm','1');}catch(e){}pmAplicar();aviso('Telemóvel ligado · envio de IBANs ativado','ok');}
+    lastN=n;
+    // o sinal só aparece quando há telemóvel realmente ligado (ligação em tempo real)
+    if(st){
+      st.className='pm-state '+(n>0?'on':'');
+      st.lastChild.textContent=n>1?n+' telemóveis ligados ✓':(n>0?'Telemóvel ligado ✓':'Sem telemóvel ligado');
+    }
+    var hd=document.getElementById('pmHdr');
+    if(hd){hd.style.display=(pmOn&&n>0)?'':'none';hd.lastChild.textContent=n>1?'📱 '+n+' ligados':'📱 Ligado';}
+  }
+  function post(body){return fetch('/api/iban',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){j.http=r.status;return j;});});}
+  function refresh(){fetch('/api/iban/estado',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j&&j.ok)estado(j.ligados||0,false);else estado(0,true);}).catch(function(){estado(0,true);});}
+  function interpretar(r,teste){
+    if(r.http===401)return {c:'bad',ico:'✕',t:'A sessão acabou. Recarrega a página.'};
+    if(r.motivo==='sem_vapid')return {c:'bad',ico:'✕',t:'Faltam as chaves de aviso no Cloudflare.'};
+    if(r.http===429||r.motivo==='limite')return {c:'warn',ico:'⏳',t:'Muitos envios seguidos. Espera um pouco e tenta outra vez.'};
+    if(r.motivo==='formato')return {c:'bad',ico:'✕',t:'Isto não parece um IBAN nem um NIB (21 números).'};
+    if(!r.ok)return {c:'bad',ico:'✕',t:'Falhou. Tenta outra vez.'};
+    estado(r.ligados||0,false);
+    if(!r.telemoveis&&!r.ligados)return {c:'warn',ico:'⚠',t:'Guardado, mas não há telemóvel ligado. Abre o link no telemóvel.'};
+    if(!r.enviados&&!r.ligados)return {c:'bad',ico:'✕',t:'Falhou: o telemóvel não recebeu o aviso.'};
+    if(r.repetido&&!teste)return {c:'warn',ico:'↺',t:'Já enviado antes (o telemóvel destacou o cartão)'};
+    if(teste)return {c:'ok',ico:'✓',t:'Teste enviado ✓'};
+    if(r.ibanValido===false)return {c:'warn',ico:'✓',t:'Enviado ✓ (checksum inválido, vai marcado no telemóvel)'};
+    return {c:'ok',ico:'✓',t:'Enviado para o telemóvel ✓'};
+  }
+  // aspeto do banco tal como está agora no PC (cores, efeito, sigla): o telemóvel desenha o cartão com isto
+  function visualDoCodigo(code){
+    try{
+      var vis=getEffectiveBankVisual(code),d=BANKS_DATA[code],v={};
+      if(vis){v.c=vis.colors;if(vis.rowStops)v.rs=vis.rowStops;if(vis.custom){var rf=CUSTOM_EFFECT_CLASS[vis.effectKey];if(rf)v.rf=rf;}}
+      var fx=resolveSiglaFx(code);if(fx.src!=='generic')v.bf=fx.cls||null; // efeito "ao acaso" não vai: o telemóvel usa o padrão fixo dele
+      v.s=SIGLA_OVERRIDES[code]||extractSigla(d?d.nome:'');
+      return v;
+    }catch(e){return null;}
+  }
+  function visualBanco(texto){
+    var nib=String(texto||'').replace(/\D/g,'').slice(-21);
+    return nib.length===21?visualDoCodigo(nib.slice(0,4)):null;
+  }
+  // "Guardar" / "Repor" no Personalizar: manda o aspeto novo ao servidor, para o telemóvel mudar sozinho (em ~4 s)
+  var asTimer=null,asPend={};
+  window.edvsmEnviarAspeto=function(code,scope){
+    (scope==='global'?Object.keys(BANKS_DATA):[code]).forEach(function(c){asPend[c]=1;});
+    clearTimeout(asTimer);
+    asTimer=setTimeout(function(){
+      var looks={},n=0;
+      Object.keys(asPend).forEach(function(c){var v=visualDoCodigo(c);if(v){looks[c]=v;n++;}});
+      asPend={};
+      if(!n)return;
+      fetch('/api/iban/aspeto',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({looks:looks})}).catch(function(){});
+    },300);
+  };
+  function enviar(texto,teste){
+    var corpo=teste?{teste:true}:{texto:texto};
+    if(!teste){var vb=visualBanco(texto);if(vb)corpo.v=vb;}
+    return post(corpo).then(function(r){return interpretar(r,teste);}).catch(function(){return {c:'bad',ico:'✕',t:'Falhou: sem ligação ao servidor.'};});
+  }
+  // chamado pelo botão 📱 da bolha do banco
+  window.edvsmEnviarTel=function(texto,el){
+    if(!pmOn||!el||el.dataset.pmBusy)return;
+    var lbl=el.querySelector('.pill-lbl');if(!lbl)return;
+    el.dataset.pmBusy='1';lbl.textContent='⏳';lbl.classList.add('pm-wait');
+    enviar(texto,false).then(function(x){
+      lbl.classList.remove('pm-wait');lbl.textContent=x.ico;aviso(x.t,x.c);
+      if(x.c==='ok'||x.ico==='✓'){el.classList.remove('flash-copied');void el.offsetWidth;el.classList.add('flash-copied');el.addEventListener('animationend',function(){el.classList.remove('flash-copied');},{once:true});}
+      setTimeout(function(){lbl.textContent='📱';delete el.dataset.pmBusy;},1800);
+    });
+  };
+  if(tst)tst.addEventListener('click',function(){tst.disabled=true;enviar('',true).then(function(x){aviso(x.t,x.c);tst.disabled=false;});});
+  // ligação em tempo real com o servidor: o estado "Telemóvel ligado ✓" muda na hora, sem perguntar de tempos a tempos
+  var ws=null,wsT=null,wsPing=null,wsTent=0;
+  function wsLigar(){
+    clearTimeout(wsT);
+    if(ws&&(ws.readyState===0||ws.readyState===1))return;
+    try{ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/api/iban/ws');}catch(e){return;}
+    var meu=ws;
+    meu.onopen=function(){wsTent=0;clearInterval(wsPing);wsPing=setInterval(function(){try{if(meu.readyState===1)meu.send('ping');}catch(e){}},40000);};
+    meu.onmessage=function(ev){
+      if(ev.data==='pong')return;
+      try{var j=JSON.parse(ev.data);if(j&&j.t==='estado')estado(j.m||0,false);}catch(e){}
+    };
+    meu.onclose=function(){
+      clearInterval(wsPing);
+      if(ws===meu){ws=null;estado(0,true);wsTent++;wsT=setTimeout(wsLigar,Math.min(30000,2000*wsTent));}
+    };
+    meu.onerror=function(){try{meu.close();}catch(e){}};
+  }
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){wsLigar();refresh();}});
+  window.addEventListener('online',wsLigar);
+  wsLigar();
+  refresh();setInterval(function(){if(!document.hidden)refresh();},60000); // reserva lenta, caso a ligação não consiga abrir
+})();
+</script>
+<script>
+// PAINEL (Fase 4): cada verificação limpa é avisada ao servidor (tipo + últimos 4 dígitos, nunca o número completo).
+// O servidor conta por turno e devolve o total: o contador do ecrã passa a ser igual ao do painel.
+// Sem internet os avisos esperam numa fila (guardada no navegador) e seguem depois; cada aviso tem um id, por isso nunca contam duas vezes.
+(function(){
+  var VERSAO_PC='1',FILA_KEY='edvsm_fila_v1',fila=[],timer=null,tent=0,ocupado=false,avisoUp=false,ultVer=0;
+  try{fila=JSON.parse(localStorage.getItem(FILA_KEY)||'[]');if(!Array.isArray(fila))fila=[];}catch(e){fila=[];}
+  function gravar(){try{localStorage.setItem(FILA_KEY,JSON.stringify(fila.slice(-500)));}catch(e){}}
+  function novoId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+  function agendar(ms){clearTimeout(timer);timer=setTimeout(enviar,ms);}
+  function pendentes(){return fila.filter(function(e){return e.tipo==='nib'||e.tipo==='bi'||e.tipo==='nome';}).length;}
+  function aplicar(total){
+    if(typeof total!=='number')return;
+    sessionCount=total+pendentes();               // total do servidor + o que ainda espera para seguir
+    persistContadorTexto();
+  }
+  function falhou(){tent++;agendar(Math.min(60000,5000*tent));}
+  function enviar(){
+    clearTimeout(timer);
+    if(ocupado)return;
+    ocupado=true;
+    var lote=fila.slice(0,50);
+    fetch('/api/painel/evento',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventos:lote,v:VERSAO_PC})})
+    .then(function(r){return r.json().then(function(j){j.http=r.status;return j;});})
+    .then(function(j){
+      ocupado=false;
+      if(j&&(j.ok||j.http===400)){                 // 400 = lote inválido: descarta para não ficar preso
+        var ids={};lote.forEach(function(e){ids[e.id]=1;});
+        fila=fila.filter(function(e){return !ids[e.id];});gravar();tent=0;
+        if(j.ok)aplicar(j.total);
+        if(fila.length)agendar(500);
+        return;
+      }
+      falhou();
+    }).catch(function(){ocupado=false;falhou();});
+  }
+  window.edvsmPainelEvento=function(tipo,l4,doc){
+    var e={id:novoId(),tipo:tipo,l4:l4||'',ts:Date.now()};if(doc)e.d=doc;
+    fila.push(e);gravar();agendar(120);   // quase instantâneo
+  };
+  // aviso discreto quando há versão nova do programa (não recarrega à força: o colega escolhe quando)
+  function mostrarAviso(){
+    avisoUp=true;
+    var d=document.createElement('div');d.style.cssText='position:fixed;right:16px;bottom:16px;z-index:99999;background:#111a31;color:#e9eefb;border:1px solid #b6f35a;border-radius:12px;padding:10px 12px;font:13px system-ui,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px #0009';
+    var t=document.createElement('span');t.textContent='Há uma versão nova do programa.';
+    var a=document.createElement('button');a.textContent='Atualizar';a.style.cssText='background:#b6f35a;color:#0a1020;border:0;border-radius:8px;padding:5px 12px;font-weight:700;cursor:pointer';a.onclick=function(){location.reload();};
+    var x=document.createElement('button');x.textContent='✕';x.title='Lembrar mais tarde';x.style.cssText='background:none;border:0;color:#8b98ba;cursor:pointer;font-size:14px';x.onclick=function(){d.remove();setTimeout(function(){avisoUp=false;},1800000);};
+    d.appendChild(t);d.appendChild(a);d.appendChild(x);document.body.appendChild(d);
+  }
+  function verVersao(){
+    if(avisoUp||Date.now()-ultVer<120000)return;ultVer=Date.now();
+    fetch('/api/versao',{credentials:'same-origin',cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j&&j.pc&&j.pc!==VERSAO_PC)mostrarAviso();}).catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){enviar();verVersao();}});
+  setInterval(verVersao,600000);setTimeout(verVersao,20000);
+  window.addEventListener('online',enviar);
+  setInterval(enviar,45000);   // sinal de vida + número igual ao do painel; continua com o separador em segundo plano
+  agendar(1500);
+})();
 </script>
 </body>
 </html>
